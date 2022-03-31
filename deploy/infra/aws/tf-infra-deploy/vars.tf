@@ -83,6 +83,11 @@ variable "cp_fsx_lustre_size" {
   default     = "1200"
 }
 
+variable "cp_efs_throughput" {
+  description = "The throughput, measured in MiB/s, that you want to provision for the AWS EFS file system."
+  default     = "500"
+}
+
 variable "cp_zone_id" {
   type        = string
   description = "The ID of the hosted zone to contain this record. Used to create A, CNAME records with the domain name in AWS Route53 required for Cloud-Pipeline deployment. Required if the customer does not have DNS zones for Cloud-Pipeline deployment."

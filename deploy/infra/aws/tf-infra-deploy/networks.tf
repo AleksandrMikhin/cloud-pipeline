@@ -88,3 +88,31 @@ resource "aws_vpc_peering_connection" "cp_vpc_pc" {
     Name = "VPC Peering between ${var.cp_name_core} and ${var.cp_name_share}"
   }
 }
+
+resource "aws_vpc_endpoint" "cp_s3_ep_core" {
+  vpc_id       = aws_vpc.cp_vpc_core.id
+  service_name = "com.amazonaws.${var.cp_region}.s3"
+
+  tags = {
+    Name = "${var.cp_region}-cloud-pipeline-${var.cp_env}-vpc"
+  }
+}
+
+resource "aws_vpc_endpoint" "cp_s3_ep_share" {
+  vpc_id       = aws_vpc.cp_vpc_share.id
+  service_name = "com.amazonaws.${var.cp_region}.s3"
+
+  tags = {
+    Name = "${var.cp_region}-cloud-pipeline-share-${var.cp_env}-vpc"
+  }
+}
+
+resource "aws_vpc_endpoint_route_table_association" "cp_vpc_ep_rta_core" {
+  route_table_id  = aws_route_table.cp_rt_public_core.id
+  vpc_endpoint_id = aws_vpc_endpoint.cp_s3_ep_core.id
+}
+
+resource "aws_vpc_endpoint_route_table_association" "cp_vpc_ep_rta_share" {
+  route_table_id  = aws_route_table.cp_rt_public_share.id
+  vpc_endpoint_id = aws_vpc_endpoint.cp_s3_ep_share.id
+}

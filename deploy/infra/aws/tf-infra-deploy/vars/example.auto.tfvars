@@ -17,6 +17,7 @@ cp_instance_type_share         = "m5.xlarge"              # AWS EC2 instance typ
 cp_instance_storage_size_core  = "200"                    # AWS EC2 instance root storage size for Core in GiB.
 cp_instance_storage_size_share = "100"                    # AWS EC2 instance root storage size for Share in GiB.
 cp_fsx_lustre_size             = "1200"                   # AWS FSx for Lustre storage size in GiB. This file system will be mounted to Core instance and will store all necessary data like config files, logs, docker images, etc.
+cp_efs_throughput              = "500"                    # The throughput, measured in MiB/s, that you want to provision for the AWS EFS file system.
 cp_zone_id                     = ""                       # The ID of the hosted zone to contain this record. Used to create A, CNAME records with the domain name in AWS Route53 required for Cloud-Pipeline deployment. Required if the customer does not have DNS zones for Cloud-Pipeline deployment.
 cp_domain_name                 = "aws.cloud-pipeline.com" # The domain name of the hosted zone. Used to create A, CNAME records with the domain name in AWS Route53 required for Cloud-Pipeline deployment. Required if the customer does not have DNS zones for Cloud-Pipeline deployment.
 cp_domain_records              = "test"                   # The name of third-level domain. Used to create A, CNAME records like as auth, docker, git with the domain name in AWS Route53 required for Cloud-Pipeline deployment. Required if the customer does not have DNS zones for Cloud-Pipeline deployment.

@@ -9,7 +9,6 @@ resource "aws_iam_role" "cp_role_service" {
       {
         Action = "sts:AssumeRole"
         Effect = "Allow"
-        Sid    = ""
         Principal = {
           Service = "ec2.amazonaws.com"
         }
@@ -38,6 +37,11 @@ resource "aws_iam_policy_attachment" "cp_policy_attach_service" {
   policy_arn = aws_iam_policy.cp_policy_service.arn
 }
 
+resource "aws_iam_instance_profile" "cp-service-profile" {
+  name = "${var.cp_project}-service-profile"
+  role = aws_iam_role.cp_role_service.name
+}
+
 resource "aws_iam_role" "cp_role_s3viasts" {
   name               = "${var.cp_project}-S3viaSTS"
   assume_role_policy = <<EOF
@@ -45,17 +49,16 @@ resource "aws_iam_role" "cp_role_s3viasts" {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "",
             "Effect": "Allow",
             "Principal": {
-                "Service": "ec2.amazonaws.com"
+                "AWS": "arn:aws:iam::${var.cp_account_id}:role/${var.cp_project}-Service"
             },
             "Action": "sts:AssumeRole"
         }
     ]
 }
 EOF
-
+  depends_on  = [aws_iam_role.cp_role_service]
   tags = {
     Name = "${var.cp_project}-S3viaSTS"
   }
@@ -77,16 +80,21 @@ resource "aws_iam_policy_attachment" "cp_policy_attach_s3viasts" {
   policy_arn = aws_iam_policy.cp_policy_s3viasts.arn
 }
 
+resource "aws_iam_instance_profile" "cp-s3viasts-profile" {
+  name = "${var.cp_project}-s3viasts-profile"
+  role = aws_iam_role.cp_role_s3viasts.name
+}
+
 resource "aws_kms_key" "cp_kms_key" {
   description = "${var.cp_project} KMS encryption key"
   key_usage   = "ENCRYPT_DECRYPT"
   is_enabled  = true
   policy      = data.template_file.cp_kms_key_template.rendered
+  depends_on = [aws_iam_role.cp_role_service]
 
   tags = {
     Name = "${var.cp_project}-KMS-${var.cp_region}"
   }
-  depends_on = [aws_iam_role.cp_role_service]
 }
 
 # The "aws_iam_service_linked_role" cannot be determined until apply, 

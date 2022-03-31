@@ -26,6 +26,9 @@ output "aws_availability_zones" {
   value = data.aws_availability_zones.available.names
 }
 
+output "cp_efs_dns_name" {
+  value = aws_efs_file_system.cp_efs.dns_name
+}
 # The "for_each" value depends on resource attributes that cannot be determined until apply, 
 # so Terraform cannot predict how many instances will be created. 
 # To work with this, first apply resources that the for_each depends on.
