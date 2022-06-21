@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.controller.user;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.AbstractRestController;
 import com.epam.pipeline.controller.Result;
 import com.epam.pipeline.controller.vo.PipelineUserExportVO;
@@ -23,7 +24,6 @@ import com.epam.pipeline.controller.vo.PipelineUserVO;
 import com.epam.pipeline.controller.vo.RouteType;
 import com.epam.pipeline.dto.user.OnlineUsers;
 import com.epam.pipeline.entity.info.UserInfo;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.user.CustomControl;
 import com.epam.pipeline.entity.user.GroupStatus;
 import com.epam.pipeline.entity.user.ImpersonationStatus;
@@ -83,7 +83,7 @@ public class UserController extends AbstractRestController {
     @ApiResponses(
             value = {@ApiResponse(code = HTTP_STATUS_OK, message = API_STATUS_DESCRIPTION)
             })
-    public Result<JwtRawToken> getSettings(@RequestParam(required = false) Long expiration,
+    public Result<JWTRawToken> getSettings(@RequestParam(required = false) Long expiration,
                                            @RequestParam(required = false) String name) {
         return Result.success(StringUtils.isNotBlank(name)
                 ? userApiService.issueToken(name, expiration)

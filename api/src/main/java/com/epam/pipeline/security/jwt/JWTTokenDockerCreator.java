@@ -30,22 +30,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.util.Assert;
 
 /**
  * This is a copy of {@code JwtTokenCreator} that can handle serialization of Object claims
  * required for Docker Registry authentication.
  */
-public final class JwtTokenDockerCreator {
+public final class JWTTokenDockerCreator {
     private final Algorithm algorithm;
     private final String headerJson;
     private final String payloadJson;
 
-    private JwtTokenDockerCreator(Algorithm algorithm, Map<String, Object> headerClaims,
-            Map<String, Object> payloadClaims) {
+    private JWTTokenDockerCreator(final Algorithm algorithm, final Map<String, Object> headerClaims,
+                                  final Map<String, Object> payloadClaims) {
         this.algorithm = algorithm;
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            SimpleModule module = new SimpleModule();
+            final ObjectMapper mapper = new ObjectMapper();
+            final SimpleModule module = new SimpleModule();
             module.addSerializer(ClaimsHolder.class, new PayloadSerializer());
             mapper.registerModule(module);
             headerJson = mapper.writeValueAsString(headerClaims);
@@ -73,7 +74,7 @@ public final class JwtTokenDockerCreator {
          * @param headerClaims the values to use as Claims in the token's Header.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withHeader(Map<String, Object> headerClaims) {
+        public JWTTokenDockerCreator.Builder withHeader(final Map<String, Object> headerClaims) {
             this.headerClaims = new HashMap<>(headerClaims);
             return this;
         }
@@ -84,7 +85,7 @@ public final class JwtTokenDockerCreator {
          * @param issuer the Issuer value.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withIssuer(String issuer) {
+        public JWTTokenDockerCreator.Builder withIssuer(final String issuer) {
             addClaim(PublicClaims.ISSUER, issuer);
             return this;
         }
@@ -95,7 +96,7 @@ public final class JwtTokenDockerCreator {
          * @param subject the Subject value.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withSubject(String subject) {
+        public JWTTokenDockerCreator.Builder withSubject(final String subject) {
             addClaim(PublicClaims.SUBJECT, subject);
             return this;
         }
@@ -106,7 +107,7 @@ public final class JwtTokenDockerCreator {
          * @param audience the Audience value.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withAudience(String... audience) {
+        public JWTTokenDockerCreator.Builder withAudience(final String... audience) {
             addClaim(PublicClaims.AUDIENCE, audience);
             return this;
         }
@@ -117,7 +118,7 @@ public final class JwtTokenDockerCreator {
          * @param expiresAt the Expires At value.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withExpiresAt(Date expiresAt) {
+        public JWTTokenDockerCreator.Builder withExpiresAt(final Date expiresAt) {
             addClaim(PublicClaims.EXPIRES_AT, expiresAt);
             return this;
         }
@@ -128,7 +129,7 @@ public final class JwtTokenDockerCreator {
          * @param issuedAt the Issued At value.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withIssuedAt(Date issuedAt) {
+        public JWTTokenDockerCreator.Builder withIssuedAt(final Date issuedAt) {
             addClaim(PublicClaims.ISSUED_AT, issuedAt);
             return this;
         }
@@ -139,13 +140,13 @@ public final class JwtTokenDockerCreator {
          * @param jwtId the Token Id value.
          * @return this same Builder instance.
          */
-        public JwtTokenDockerCreator.Builder withJWTId(String jwtId) {
+        public JWTTokenDockerCreator.Builder withJWTId(final String jwtId) {
             addClaim(PublicClaims.JWT_ID, jwtId);
             return this;
         }
 
-        public JwtTokenDockerCreator.Builder withObjectClaim(String name, Object value) {
-            assertNonNull(name);
+        public JWTTokenDockerCreator.Builder withObjectClaim(final String name, final Object value) {
+            Assert.notNull(name, "The Custom Claim's name can't be null.");
             addClaim(name, value);
             return this;
         }
@@ -159,21 +160,15 @@ public final class JwtTokenDockerCreator {
          * @throws JWTCreationException     if the claims could not be converted to a valid JSON
          *                                  or there was a problem with the signing key.
          */
-        public String sign(Algorithm algorithm) {
+        public String sign(final Algorithm algorithm) {
             if (algorithm == null) {
                 throw new IllegalArgumentException("The Algorithm cannot be null.");
             }
             headerClaims.put(PublicClaims.ALGORITHM, algorithm.getName());
-            return new JwtTokenDockerCreator(algorithm, headerClaims, payloadClaims).sign();
+            return new JWTTokenDockerCreator(algorithm, headerClaims, payloadClaims).sign();
         }
 
-        private void assertNonNull(String name) {
-            if (name == null) {
-                throw new IllegalArgumentException("The Custom Claim's name can't be null.");
-            }
-        }
-
-        private void addClaim(String name, Object value) {
+        private void addClaim(final String name, final Object value) {
             if (value == null) {
                 payloadClaims.remove(name);
                 return;

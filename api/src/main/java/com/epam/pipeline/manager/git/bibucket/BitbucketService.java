@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.manager.git.bibucket;
 
+import com.epam.lifescience.security.utils.AuthorizationUtils;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.config.Constants;
@@ -44,7 +45,6 @@ import com.epam.pipeline.manager.git.GitClientService;
 import com.epam.pipeline.manager.git.RestApiUtils;
 import com.epam.pipeline.manager.security.AuthManager;
 import com.epam.pipeline.mapper.git.BitbucketMapper;
-import com.epam.pipeline.utils.AuthorizationUtils;
 import com.epam.pipeline.utils.GitUtils;
 import joptsimple.internal.Strings;
 import org.apache.commons.collections4.CollectionUtils;
@@ -358,7 +358,7 @@ public class BitbucketService implements GitClientService {
 
         Assert.isTrue(StringUtils.isNotBlank(token), messageHelper
                 .getMessage(MessageConstants.ERROR_BITBUCKET_TOKEN_NOT_FOUND));
-        final String credentials = AuthorizationUtils.BEARER_AUTH + token;
+        final String credentials = AuthorizationUtils.BEARER_PREFIX + token;
 
         return new BitbucketClient(bitbucketHost, credentials, null, projectName, repositoryName);
     }

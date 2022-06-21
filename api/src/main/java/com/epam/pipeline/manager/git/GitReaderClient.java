@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.manager.git;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.Result;
 import com.epam.pipeline.controller.ResultStatus;
 import com.epam.pipeline.entity.git.GitCommitsFilter;
@@ -30,7 +31,6 @@ import com.epam.pipeline.entity.git.gitreader.GitReaderObject;
 import com.epam.pipeline.entity.git.gitreader.GitReaderRepositoryCommit;
 import com.epam.pipeline.entity.git.gitreader.GitReaderRepositoryCommitDiff;
 import com.epam.pipeline.entity.git.gitreader.GitReaderRepositoryLogEntry;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.exception.git.GitClientException;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -55,9 +55,9 @@ public class GitReaderClient {
     private static final String DATA_FORMAT = "yyyy-MM-dd HH:mm:ss Z";
 
     private GitReaderApi gitReaderApi;
-    private JwtRawToken userJwtToken;
+    private JWTRawToken userJwtToken;
 
-    GitReaderClient(final String gitReaderUrlRoot, final JwtRawToken userJwtToken) {
+    GitReaderClient(final String gitReaderUrlRoot, final JWTRawToken userJwtToken) {
         this.userJwtToken = userJwtToken;
         if (StringUtils.isBlank(gitReaderUrlRoot)) {
             throw new IllegalArgumentException("Cannot get GitReader Service URL.");

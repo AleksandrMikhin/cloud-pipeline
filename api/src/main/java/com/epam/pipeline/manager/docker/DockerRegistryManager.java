@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.manager.docker;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.config.Constants;
@@ -34,7 +36,6 @@ import com.epam.pipeline.entity.pipeline.DockerRegistryEventEnvelope;
 import com.epam.pipeline.entity.pipeline.Tool;
 import com.epam.pipeline.entity.pipeline.ToolGroup;
 import com.epam.pipeline.entity.pipeline.ToolScanStatus;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.security.acl.AclClass;
 import com.epam.pipeline.entity.utils.DateUtils;
 import com.epam.pipeline.exception.docker.DockerAuthorizationException;
@@ -46,7 +47,6 @@ import com.epam.pipeline.manager.security.AuthManager;
 import com.epam.pipeline.manager.security.GrantPermissionManager;
 import com.epam.pipeline.manager.security.SecuredEntityManager;
 import com.epam.pipeline.manager.security.acl.AclSync;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.security.acl.AclPermission;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -359,7 +359,7 @@ public class DockerRegistryManager implements SecuredEntityManager {
      *                  'scope=repository:samalba/my-app:push,repository:samalba/my-test:push'
      * @return
      */
-    public JwtRawToken issueTokenForDockerRegistry(String userName, String token,
+    public JWTRawToken issueTokenForDockerRegistry(String userName, String token,
             String dockerRegistryHost, String scope) {
         LOGGER.debug("Processing authorization request from registry {} for user {} and scope {}",
                 dockerRegistryHost, userName, scope);
@@ -371,7 +371,7 @@ public class DockerRegistryManager implements SecuredEntityManager {
         }
         try {
             List<DockerRegistryClaim> claims = parseAndValidateScope(userName, dockerRegistry, scope);
-            JwtRawToken jwtRawToken =
+            JWTRawToken jwtRawToken =
                     dockerAuthService.issueDockerToken(user, dockerRegistryHost, claims);
             LOGGER.debug("Successfully issued JWT token for registry {} user {} and scope {}",
                     dockerRegistry, userName, scope);

@@ -16,16 +16,16 @@
 
 package com.epam.pipeline.controller.docker;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.config.JsonMapper;
 import com.epam.pipeline.controller.vo.docker.DockerRegistryVO;
 import com.epam.pipeline.entity.docker.DockerRegistryList;
 import com.epam.pipeline.entity.pipeline.DockerRegistry;
 import com.epam.pipeline.entity.pipeline.DockerRegistryEventEnvelope;
 import com.epam.pipeline.entity.pipeline.Tool;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.acl.docker.DockerRegistryApiService;
 import com.epam.pipeline.security.UserAccessService;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.test.creator.CommonCreatorConstants;
 import com.epam.pipeline.test.creator.docker.DockerCreatorUtils;
 import com.epam.pipeline.test.creator.security.SecurityCreatorUtils;
@@ -83,7 +83,7 @@ public class DockerRegistryControllerTest extends AbstractControllerTest {
 
     private final DockerRegistry dockerRegistry = DockerCreatorUtils.getDockerRegistry();
     private final DockerRegistryVO dockerRegistryVO = DockerCreatorUtils.getDockerRegistryVO();
-    private final JwtRawToken jwtRawToken = SecurityCreatorUtils.getJwtRawToken();
+    private final JWTRawToken jwtRawToken = SecurityCreatorUtils.getJwtRawToken();
     private final DockerRegistryList dockerRegistryList = DockerCreatorUtils.getDockerRegistryList();
     private final DockerRegistryEventEnvelope eventEnvelope = DockerCreatorUtils.getDockerRegistryEventEnvelope();
     private final UserContext userContext = SecurityCreatorUtils.getUserContext();
@@ -164,7 +164,7 @@ public class DockerRegistryControllerTest extends AbstractControllerTest {
 
         verify(mockDockerRegistryApiService)
                 .issueTokenForDockerRegistry(TEST_STRING, TEST_STRING, TEST_STRING, TEST_STRING);
-        final JwtRawToken actualResult = JsonMapper.parseData(mvcResult.getResponse().getContentAsString(),
+        final JWTRawToken actualResult = JsonMapper.parseData(mvcResult.getResponse().getContentAsString(),
                 SecurityCreatorUtils.JWT_RAW_TOKEN_INSTANCE_TYPE);
         Assert.assertEquals(jwtRawToken, actualResult);
     }

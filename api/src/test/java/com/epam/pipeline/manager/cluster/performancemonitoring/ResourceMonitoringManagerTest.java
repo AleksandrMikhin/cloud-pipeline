@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.manager.cluster.performancemonitoring;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.jwt.JWTAuthenticationToken;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.dao.monitoring.MonitoringESDao;
 import com.epam.pipeline.entity.cluster.InstanceType;
@@ -35,8 +37,6 @@ import com.epam.pipeline.manager.pipeline.StopServerlessRunManager;
 import com.epam.pipeline.manager.preference.PreferenceManager;
 import com.epam.pipeline.manager.preference.SystemPreferences;
 import com.epam.pipeline.manager.security.AuthManager;
-import com.epam.pipeline.security.UserContext;
-import com.epam.pipeline.security.jwt.JwtAuthenticationToken;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 import org.apache.commons.collections.CollectionUtils;
@@ -195,7 +195,7 @@ public class ResourceMonitoringManagerTest {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         UserContext userContext = new UserContext(1L, "admin");
         Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_ADMIN");
-        context.setAuthentication(new JwtAuthenticationToken(userContext, authorities));
+        context.setAuthentication(new JWTAuthenticationToken(userContext, authorities));
         when(authManager.createSchedulerSecurityContext()).thenReturn(context);
 
         testType = new InstanceType();

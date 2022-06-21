@@ -17,6 +17,7 @@
 package com.epam.pipeline.security;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.epam.pipeline.security.saml.SAMLProxyAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.ThreadContext;
@@ -82,7 +83,7 @@ public class SecurityLogAspect {
         }
     }
 
-    @Before(value = "execution(* com.epam.pipeline.security.saml.SAMLUserDetailsServiceImpl.loadUserBySAML(..))" +
+    @Before(value = "execution(* com.epam.lifescience.security.saml.SAMLUserDetailsServiceImpl.loadUserBySAML(..))" +
             "&& args(credential,..)")
     public void addUserInfoFromSAML(JoinPoint joinPoint, SAMLCredential credential) {
         if (credential != null) {
@@ -90,16 +91,16 @@ public class SecurityLogAspect {
         }
     }
 
-    @Before(value = "execution(* com.epam.pipeline.security.jwt.JwtTokenVerifier.readClaims(..)) && args(token,..)")
+    @Before(value = "execution(* com.epam.lifescience.security.jwt.JWTTokenVerifier.readClaims(..)) && args(token,..)")
     public void addUserInfoWhileAuthByJWT(JoinPoint joinPoint, String token) {
-        JWT decode = JWT.decode(token);
+        DecodedJWT decode = JWT.decode(token);
         ThreadContext.put(KEY_USER, decode.getSubject() != null ? decode.getSubject() : ANONYMOUS);
     }
 
     @After(value = PERMISSION_RELATED_METHODS_POINTCUT +
-            "|| execution(* com.epam.pipeline.security.saml.SAMLUserDetailsServiceImpl.loadUserBySAML(..)) " +
+            "|| execution(* com.epam.lifescience.security.saml.SAMLUserDetailsServiceImpl.loadUserBySAML(..)) " +
             "|| execution(* com.epam.pipeline.security.saml.SAMLProxyAuthenticationProvider.authenticate(..))" +
-            "|| execution(* com.epam.pipeline.security.jwt.JwtFilterAuthenticationFilter.doFilterInternal(..))")
+            "|| execution(* com.epam.lifescience.security.jwt.JWTAuthenticationFilter.doFilterInternal(..))")
     public void clearUserInfo() {
         ThreadContext.clearAll();
     }

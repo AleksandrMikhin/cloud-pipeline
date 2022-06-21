@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.test.jdbc;
 
+import com.epam.lifescience.security.jwt.JWTTokenGenerator;
 import com.epam.pipeline.manager.EntityManager;
 import com.epam.pipeline.manager.configuration.RunConfigurationManager;
 import com.epam.pipeline.manager.git.GitManager;
@@ -38,7 +39,6 @@ import com.epam.pipeline.manager.scheduling.ScheduleProviderManager;
 import com.epam.pipeline.manager.security.AuthManager;
 import com.epam.pipeline.mapper.AbstractRunConfigurationMapper;
 import com.epam.pipeline.mapper.IssueMapper;
-import com.epam.pipeline.security.jwt.JwtTokenGenerator;
 import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -53,7 +53,7 @@ import static org.mockito.Mockito.spy;
 public class JdbcTestBeans {
 
     @MockBean
-    protected JwtTokenGenerator mockJwtTokenGenerator;
+    protected JWTTokenGenerator mockJwtTokenGenerator;
 
     @MockBean
     protected EntityManager mockEntityManager;

@@ -16,13 +16,12 @@
 
 package com.epam.pipeline.controller.proxy;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
+import com.epam.pipeline.controller.Result;
+import com.epam.pipeline.manager.security.AuthManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.epam.pipeline.controller.Result;
-import com.epam.pipeline.entity.security.JwtRawToken;
-import com.epam.pipeline.manager.security.AuthManager;
 
 @RestController
 public class ProxyController {
@@ -33,9 +32,8 @@ public class ProxyController {
         this.authManager = authManager;
     }
 
-
     @GetMapping("/proxy/token")
-    public Result<JwtRawToken> getProxyToken() {
+    public Result<JWTRawToken> getProxyToken() {
         return Result.success(authManager.issueTokenForCurrentUser());
     }
 }

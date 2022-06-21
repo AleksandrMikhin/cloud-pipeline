@@ -19,18 +19,18 @@ package com.epam.pipeline.manager.docker;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
+import com.epam.lifescience.security.entity.jwt.JWTTokenClaims;
+import com.epam.lifescience.security.exception.jwt.TokenVerificationException;
+import com.epam.lifescience.security.jwt.JWTTokenVerifier;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
-import com.epam.pipeline.entity.security.JwtRawToken;
-import com.epam.pipeline.entity.security.JwtTokenClaims;
 import com.epam.pipeline.exception.docker.DockerAuthorizationException;
 import com.epam.pipeline.manager.preference.PreferenceManager;
 import com.epam.pipeline.manager.preference.SystemPreferences;
 import com.epam.pipeline.manager.user.UserManager;
-import com.epam.pipeline.security.UserContext;
-import com.epam.pipeline.security.jwt.JwtTokenGenerator;
-import com.epam.pipeline.security.jwt.JwtTokenVerifier;
-import com.epam.pipeline.security.jwt.TokenVerificationException;
+import com.epam.pipeline.security.jwt.JWTTokenDockerGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -46,32 +46,33 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 @Slf4j
 public class DockerAuthService {
-
-    private static final Long TOKEN_EXPIRATION = 30L;
+    private static final int TOKEN_EXPIRATION = 30;
 
     private final UserManager userManager;
-    private final JwtTokenVerifier jwtTokenVerifier;
-    private final JwtTokenGenerator jwtTokenGenerator;
+    private final JWTTokenVerifier tokenVerifier;
+    private final JWTTokenDockerGenerator tokenDockerGenerator;
     private final PreferenceManager preferenceManager;
     private final MessageHelper messageHelper;
 
-    public JwtRawToken issueDockerToken(UserContext user, String service, List<DockerRegistryClaim> claims) {
-        Long jwtExpirationSeconds = preferenceManager.getPreference(
+    public JWTRawToken issueDockerToken(final UserContext user, final String service,
+                                        final List<DockerRegistryClaim> claims) {
+        final Long jwtExpirationSeconds = preferenceManager.getPreference(
                 SystemPreferences.DOCKER_SECURITY_TOOL_JWT_TOKEN_EXPIRATION);
-        long expitationTime = jwtExpirationSeconds != null && jwtExpirationSeconds > 0
+        final long expirationTime = jwtExpirationSeconds != null && jwtExpirationSeconds > 0
                 ? jwtExpirationSeconds : TOKEN_EXPIRATION;
+
         Assert.notNull(user, messageHelper.getMessage(MessageConstants.ERROR_DOCKER_REGISTRY_AUTHENTICATION_REQUIRED));
-        return new JwtRawToken(jwtTokenGenerator.issueDockerToken(user.toClaims(), expitationTime, service, claims));
+        return new JWTRawToken(tokenDockerGenerator.issueDockerToken(user.toClaims(), expirationTime, service, claims));
     }
 
     public UserContext verifyTokenForDocker(String userName, String token, String dockerRegistryHost) {
-        UserContext user = userManager.loadUserContext(userName);
+        final UserContext user = userManager.loadUserContext(userName);
         if (user == null) {
             log.debug("Failed to find user by name {}.", userName);
             throw new DockerAuthorizationException(dockerRegistryHost);
         }
         try {
-            JwtTokenClaims tokenClaims = jwtTokenVerifier.readClaims(token);
+            final JWTTokenClaims tokenClaims = tokenVerifier.readClaims(token);
             if (!tokenClaims.getUserName().equalsIgnoreCase(userName)) {
                 log.debug("Provided user and token do not match.");
                 throw new DockerAuthorizationException(dockerRegistryHost);

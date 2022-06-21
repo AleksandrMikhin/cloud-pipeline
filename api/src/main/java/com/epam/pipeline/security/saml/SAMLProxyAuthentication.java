@@ -16,14 +16,13 @@
 
 package com.epam.pipeline.security.saml;
 
-import java.util.Collection;
-import java.util.Collections;
-
+import com.epam.lifescience.security.entity.UserContext;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import com.epam.pipeline.security.UserContext;
-import lombok.AllArgsConstructor;
+import java.util.Collection;
+import java.util.Collections;
 
 @AllArgsConstructor
 public class SAMLProxyAuthentication implements Authentication {
@@ -56,7 +55,7 @@ public class SAMLProxyAuthentication implements Authentication {
     }
 
     @Override
-    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+    public void setAuthenticated(final boolean isAuthenticated) throws IllegalArgumentException {
 
     }
 

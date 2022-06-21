@@ -19,15 +19,11 @@ package com.epam.pipeline.security.saml;
 import org.opensaml.common.SAMLException;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
 import org.opensaml.ws.message.encoder.MessageEncodingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.security.saml.context.SAMLMessageContext;
 import org.springframework.security.saml.websso.SingleLogoutProfileImpl;
 
 public class OptionalSingleLogoutProfileImpl extends SingleLogoutProfileImpl {
-
-    private static final Logger LOG = LoggerFactory.getLogger(OptionalSingleLogoutProfileImpl.class);
 
     @Override
     public void sendLogoutRequest(SAMLMessageContext context, SAMLCredential credential)
@@ -35,7 +31,7 @@ public class OptionalSingleLogoutProfileImpl extends SingleLogoutProfileImpl {
         try {
             super.sendLogoutRequest(context, credential);
         } catch (MetadataProviderException e) {
-            LOG.debug(e.getMessage(), e);
+            log.debug(e.getMessage(), e);
         }
     }
 
@@ -46,7 +42,7 @@ public class OptionalSingleLogoutProfileImpl extends SingleLogoutProfileImpl {
         try {
             super.sendLogoutResponse(context, statusCode, statusMessage);
         } catch (MetadataProviderException e) {
-            LOG.debug(e.getMessage(), e);
+            log.debug(e.getMessage(), e);
         }
     }
 }

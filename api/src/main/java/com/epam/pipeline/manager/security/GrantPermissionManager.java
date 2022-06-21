@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.manager.security;
 
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.controller.vo.EntityPermissionVO;
@@ -76,7 +77,6 @@ import com.epam.pipeline.manager.user.UserManager;
 import com.epam.pipeline.mapper.AbstractEntityPermissionMapper;
 import com.epam.pipeline.mapper.PermissionGrantVOMapper;
 import com.epam.pipeline.mapper.PipelineWithPermissionsMapper;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.security.acl.AclPermission;
 import com.epam.pipeline.security.acl.JdbcMutableAclServiceImpl;
 import lombok.Data;

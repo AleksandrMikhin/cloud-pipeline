@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.security.saml;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.saml.SAMLUserDetailsServiceImpl;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.entity.user.GroupStatus;
 import com.epam.pipeline.entity.user.PipelineUser;
@@ -24,7 +26,6 @@ import com.epam.pipeline.manager.security.GrantPermissionManager;
 import com.epam.pipeline.manager.user.RoleManager;
 import com.epam.pipeline.manager.user.UserManager;
 import com.epam.pipeline.security.UserAccessService;
-import com.epam.pipeline.security.UserContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;

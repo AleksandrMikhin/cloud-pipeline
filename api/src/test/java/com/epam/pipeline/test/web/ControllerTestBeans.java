@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.test.web;
 
+import com.epam.lifescience.security.jwt.JWTTokenGenerator;
+import com.epam.lifescience.security.jwt.JWTTokenVerifier;
 import com.epam.pipeline.acl.billing.BillingApiService;
 import com.epam.pipeline.acl.cloud.credentials.CloudProfileCredentialsApiService;
 import com.epam.pipeline.acl.cluster.NatGatewayApiService;
@@ -70,8 +72,6 @@ import com.epam.pipeline.manager.template.TemplateManager;
 import com.epam.pipeline.acl.user.RoleApiService;
 import com.epam.pipeline.acl.user.UserApiService;
 import com.epam.pipeline.security.UserAccessService;
-import com.epam.pipeline.security.jwt.JwtTokenGenerator;
-import com.epam.pipeline.security.jwt.JwtTokenVerifier;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -215,10 +215,10 @@ public class ControllerTestBeans {
     protected SAMLEntryPoint samlEntryPoint;
 
     @MockBean
-    protected JwtTokenVerifier jwtTokenVerifier;
+    protected JWTTokenVerifier jwtTokenVerifier;
 
     @MockBean
-    protected JwtTokenGenerator jwtTokenGenerator;
+    protected JWTTokenGenerator jwtTokenGenerator;
 
     @MockBean
     protected CategoricalAttributeApiService categoricalAttributeApiService;

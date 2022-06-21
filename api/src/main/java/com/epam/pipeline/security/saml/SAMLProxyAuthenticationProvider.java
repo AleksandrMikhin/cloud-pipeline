@@ -16,14 +16,12 @@
 
 package com.epam.pipeline.security.saml;
 
-import static com.epam.pipeline.manager.preference.SystemPreferences.SYSTEM_EXTERNAL_SERVICES_ENDPOINTS;
-
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.pipeline.manager.preference.SystemPreferences;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +45,7 @@ public class SAMLProxyAuthenticationProvider implements AuthenticationProvider {
     private static final int RESPONSE_SKEW = 1200;
 
     @Value("${saml.authn.max.authentication.age:93600}")
-    private Long maxAuthentificationAge;
+    private Long maxAuthenticationAge;
 
     @Autowired
     private MessageHelper messageHelper;
@@ -60,7 +58,7 @@ public class SAMLProxyAuthenticationProvider implements AuthenticationProvider {
         SAMLProxyAuthentication auth = (SAMLProxyAuthentication) authentication;
 
         List<ExternalServiceEndpoint> externalServices = preferenceManager.getPreference(
-            SYSTEM_EXTERNAL_SERVICES_ENDPOINTS);
+            SystemPreferences.SYSTEM_EXTERNAL_SERVICES_ENDPOINTS);
         if (CollectionUtils.isEmpty(externalServices)) {
             throw new AuthenticationServiceException(
                     messageHelper.getMessage(MessageConstants.ERROR_PROXY_SECURITY_CONFIG_MISSING));
@@ -91,14 +89,11 @@ public class SAMLProxyAuthenticationProvider implements AuthenticationProvider {
 
     private Authentication validateAuthentication(SAMLProxyAuthentication auth, Response decoded, String endpointId,
                                                   ExternalServiceEndpoint endpoint) throws SAMLException {
-        try (FileReader metadataReader = new FileReader(new File(endpoint.getMetadataPath()))) {
-            CustomSamlClient client = CustomSamlClient.fromMetadata(endpointId, metadataReader,
-                                                                    RESPONSE_SKEW);
-
-            client.setMaxAuthenticationAge(maxAuthentificationAge);
+        try (FileReader metadataReader = new FileReader(endpoint.getMetadataPath())) {
+            CustomSamlClient client = CustomSamlClient.fromMetadata(endpointId, metadataReader, RESPONSE_SKEW);
+            client.setMaxAuthenticationAge(maxAuthenticationAge);
             client.validate(decoded);
             return auth;
-
         } catch (IOException e) {
             throw new AuthenticationServiceException("Could not read proxy metadata", e);
         }

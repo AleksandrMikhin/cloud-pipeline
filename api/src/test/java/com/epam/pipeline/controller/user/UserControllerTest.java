@@ -16,12 +16,12 @@
 
 package com.epam.pipeline.controller.user;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.acl.user.UserApiService;
 import com.epam.pipeline.controller.vo.PipelineUserExportVO;
 import com.epam.pipeline.controller.vo.PipelineUserVO;
 import com.epam.pipeline.controller.vo.RouteType;
 import com.epam.pipeline.entity.info.UserInfo;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.user.CustomControl;
 import com.epam.pipeline.entity.user.GroupStatus;
 import com.epam.pipeline.entity.user.PipelineUser;
@@ -104,7 +104,7 @@ public class UserControllerTest extends AbstractControllerTest {
     private static final String FILE_NAME = "users.csv";
     private static final String ROLE_ANONYMOUS_USER = "ANONYMOUS_USER";
 
-    private final JwtRawToken token = SecurityCreatorUtils.getJwtRawToken();
+    private final JWTRawToken token = SecurityCreatorUtils.getJwtRawToken();
     private final PipelineUser pipelineUser = UserCreatorUtils.getPipelineUser();
     private final PipelineUserVO pipelineUserVO = UserCreatorUtils.getPipelineUserVO();
     private final UserInfo userInfo = UserCreatorUtils.getUserInfo(UserCreatorUtils.getPipelineUser());

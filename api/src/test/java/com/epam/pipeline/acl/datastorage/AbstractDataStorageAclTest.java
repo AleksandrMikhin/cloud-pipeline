@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.acl.datastorage;
 
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.entity.datastorage.AbstractDataStorage;
 import com.epam.pipeline.entity.pipeline.Pipeline;
 import com.epam.pipeline.entity.security.acl.AclClass;
@@ -24,7 +25,6 @@ import com.epam.pipeline.manager.datastorage.DataStorageManager;
 import com.epam.pipeline.manager.datastorage.convert.DataStorageConvertManager;
 import com.epam.pipeline.manager.datastorage.tag.DataStorageTagBatchManager;
 import com.epam.pipeline.manager.security.AuthManager;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.test.acl.AbstractAclTest;
 import com.epam.pipeline.test.creator.datastorage.DatastorageCreatorUtils;
 import com.epam.pipeline.test.creator.pipeline.PipelineCreatorUtils;

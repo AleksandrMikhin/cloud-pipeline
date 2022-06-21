@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.controller.docker;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
+import com.epam.lifescience.security.utils.AuthorizationUtils;
 import com.epam.pipeline.controller.AbstractRestController;
 import com.epam.pipeline.controller.Result;
 import com.epam.pipeline.controller.vo.docker.DockerRegistryVO;
@@ -23,10 +25,8 @@ import com.epam.pipeline.entity.docker.DockerRegistryList;
 import com.epam.pipeline.entity.pipeline.DockerRegistry;
 import com.epam.pipeline.entity.pipeline.DockerRegistryEventEnvelope;
 import com.epam.pipeline.entity.pipeline.Tool;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.exception.docker.DockerAuthorizationException;
 import com.epam.pipeline.acl.docker.DockerRegistryApiService;
-import com.epam.pipeline.utils.AuthorizationUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -109,8 +109,8 @@ public class DockerRegistryController extends AbstractRestController {
     @ApiResponses(
             value = {@ApiResponse(code = HTTP_STATUS_OK, message = API_STATUS_DESCRIPTION)
             })
-    public JwtRawToken oauthEndpoint(@RequestParam String service,
-            @RequestParam(required = false) String scope, HttpServletRequest request) {
+    public JWTRawToken oauthEndpoint(@RequestParam String service,
+                                     @RequestParam(required = false) String scope, HttpServletRequest request) {
         final String authorization = request.getHeader("Authorization");
         final String[] credentials = AuthorizationUtils.parseBasicAuth(authorization);
         if (Objects.isNull(credentials)) {

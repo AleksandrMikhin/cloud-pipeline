@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.manager.cloud;
 
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.entity.pipeline.PipelineRun;
 import com.epam.pipeline.entity.pipeline.RunInstance;
 import com.epam.pipeline.exception.CmdExecutionException;
@@ -27,7 +28,6 @@ import com.epam.pipeline.manager.preference.PreferenceManager;
 import com.epam.pipeline.manager.preference.SystemPreferences;
 import com.epam.pipeline.manager.security.AuthManager;
 import com.epam.pipeline.manager.user.UserManager;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -16,10 +16,10 @@
 
 package com.epam.pipeline.acl.user;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.vo.PipelineUserExportVO;
 import com.epam.pipeline.controller.vo.PipelineUserVO;
 import com.epam.pipeline.entity.info.UserInfo;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.user.CustomControl;
 import com.epam.pipeline.entity.user.GroupStatus;
 import com.epam.pipeline.entity.user.PipelineUser;
@@ -59,7 +59,7 @@ public class UserApiServiceTest extends AbstractAclTest {
     private final UserInfo userInfo = UserCreatorUtils.getUserInfo(pipelineUser);
     private final CustomControl customControl = UserCreatorUtils.getCustomControl();
     private final PipelineUserExportVO userExportVO = UserCreatorUtils.getPipelineUserExportVO();
-    private final JwtRawToken token = SecurityCreatorUtils.getJwtRawToken();
+    private final JWTRawToken token = SecurityCreatorUtils.getJwtRawToken();
 
     private final List<GroupStatus> groupStatusList = Collections.singletonList(groupStatus);
     private final List<PipelineUser> pipelineUserList = Collections.singletonList(pipelineUser);

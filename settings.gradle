@@ -21,3 +21,5 @@ include 'cloud-pipeline-webdav-client'
 include 'git-reader'
 include 'monitoring-service'
 
+include 'starter'
+

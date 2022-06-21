@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.acl.run;
 
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.controller.PagedResult;
 import com.epam.pipeline.controller.vo.PagingRunFilterVO;
 import com.epam.pipeline.entity.contextual.ContextualPreference;
@@ -35,7 +36,6 @@ import com.epam.pipeline.manager.pipeline.PipelineRunManager;
 import com.epam.pipeline.manager.pipeline.ToolManager;
 import com.epam.pipeline.manager.preference.SystemPreferences;
 import com.epam.pipeline.manager.security.run.RunVisibilityPolicy;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.security.acl.AclPermission;
 import com.epam.pipeline.test.acl.AbstractAclTest;
 import org.junit.Test;

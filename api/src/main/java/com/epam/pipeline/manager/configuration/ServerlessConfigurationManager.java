@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.manager.configuration;
 
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.config.JsonMapper;
 import com.epam.pipeline.controller.vo.PagingRunFilterVO;
 import com.epam.pipeline.controller.vo.ServiceUrlVO;
@@ -31,7 +32,6 @@ import com.epam.pipeline.manager.preference.PreferenceManager;
 import com.epam.pipeline.manager.preference.SystemPreferences;
 import com.epam.pipeline.manager.security.AuthManager;
 import com.epam.pipeline.mapper.AbstractRunConfigurationMapper;
-import com.epam.pipeline.security.UserContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
