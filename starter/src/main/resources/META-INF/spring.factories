@@ -1,0 +1,4 @@
+#Security auto configuration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.epam.lifescience.security.config.jwt.JWTSecurityAutoConfiguration,\
+  com.epam.lifescience.security.config.saml.SAMLSecurityAutoConfiguration
