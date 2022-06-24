@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.test.web;
 
+import com.epam.lifescience.security.config.jwt.JWTSecurityConfigurationExtender;
 import com.epam.lifescience.security.jwt.JWTTokenGenerator;
 import com.epam.lifescience.security.jwt.JWTTokenVerifier;
 import com.epam.pipeline.acl.billing.BillingApiService;
@@ -51,6 +52,7 @@ import com.epam.pipeline.acl.metadata.CategoricalAttributeApiService;
 import com.epam.pipeline.acl.metadata.MetadataApiService;
 import com.epam.pipeline.acl.metadata.MetadataEntityApiService;
 import com.epam.pipeline.acl.region.CloudRegionApiService;
+import com.epam.pipeline.entity.user.DefaultRoles;
 import com.epam.pipeline.manager.cloudaccess.CloudAccessApiService;
 import com.epam.pipeline.manager.firecloud.FirecloudApiService;
 import com.epam.pipeline.manager.google.CredentialsManager;
@@ -72,7 +74,9 @@ import com.epam.pipeline.manager.template.TemplateManager;
 import com.epam.pipeline.acl.user.RoleApiService;
 import com.epam.pipeline.acl.user.UserApiService;
 import com.epam.pipeline.security.UserAccessService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -84,6 +88,24 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 @Import(InternalResourceViewResolver.class)
 @EnableWebSecurity
 public class ControllerTestBeans {
+
+    @Value("${api.security.anonymous.urls:/restapi/route}")
+    private String[] anonymousResources;
+
+    @Value("${api.security.impersonation.operations.root.url:/restapi/user/impersonation}")
+    private String impersonationOperationsRootUrl;
+
+    @Bean
+    public JWTSecurityConfigurationExtender jwtSecurityConfigurationExtender() {
+        return http -> http.authorizeRequests()
+                .antMatchers(anonymousResources).hasAnyAuthority(DefaultRoles.ROLE_ADMIN.getName(),
+                        DefaultRoles.ROLE_USER.getName(), DefaultRoles.ROLE_ANONYMOUS_USER.getName())
+                .antMatchers(getImpersonationStartUrl()).hasAuthority(DefaultRoles.ROLE_ADMIN.getName());
+    }
+
+    private String getImpersonationStartUrl() {
+        return impersonationOperationsRootUrl + "/start";
+    }
 
     @MockBean
     protected BillingApiService billingApiService;

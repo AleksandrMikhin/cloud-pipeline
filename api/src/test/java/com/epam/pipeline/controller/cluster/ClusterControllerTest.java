@@ -86,7 +86,6 @@ public class ClusterControllerTest extends AbstractControllerTest {
     private static final String INTERVAL = "interval";
     private static final String REPORT_TYPE = "type";
     private static final String DURATION_AS_STRING = Duration.ofHours(1).toString();
-    private static final String CONTENT_DISPOSITION_HEADER = "Content-Disposition";
     private static final DateTimeFormatter REQUEST_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     private final LocalDateTime from = LocalDateTime.parse(FROM_STRING, DEFAULT_FORMATTER);

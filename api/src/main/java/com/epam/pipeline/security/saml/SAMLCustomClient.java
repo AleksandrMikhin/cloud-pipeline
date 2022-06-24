@@ -70,7 +70,7 @@ import static org.springframework.security.saml.util.SAMLUtil.isDateTimeSkewVali
 
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
 @Slf4j
-public class CustomSamlClient extends WebSSOProfileConsumerImpl {
+public class SAMLCustomClient extends WebSSOProfileConsumerImpl {
     public static final String SSO_ENDPOINT = "/saml/SSO";
 
     public enum SamlIdpBinding {
@@ -105,7 +105,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @param responseSkew
      * @throws SamlException thrown if any error occur while loading the provider information.
      */
-    public CustomSamlClient(final String relyingPartyIdentifier,
+    public SAMLCustomClient(final String relyingPartyIdentifier,
                             final String identityProviderUrl,
                             final String responseIssuer,
                             final List<X509Certificate> certificates,
@@ -119,7 +119,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         this.relyingPartyIdentifier = relyingPartyIdentifier;
         this.identityProviderUrl = identityProviderUrl;
         this.responseIssuer = responseIssuer;
-        credentials = certificates.stream().map(CustomSamlClient::getCredential).collect(Collectors.toList());
+        credentials = certificates.stream().map(SAMLCustomClient::getCredential).collect(Collectors.toList());
     }
 
     /**
@@ -201,13 +201,13 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      *
      * @param relyingPartyIdentifier      the identifier for the relying party.
      * @param metadata                    the XML metadata obtained from the identity provider.
-     * @return The created {@link CustomSamlClient}.
+     * @return The created {@link SAMLCustomClient}.
      * @throws SamlException thrown if any error occur while loading the metadata information.
      */
-    public static CustomSamlClient fromMetadata(final String relyingPartyIdentifier, final Reader metadata,
+    public static SAMLCustomClient fromMetadata(final String relyingPartyIdentifier, final Reader metadata,
                                                 final int responseSkew) throws SAMLException {
         return fromMetadata(relyingPartyIdentifier, metadata,
-                CustomSamlClient.SamlIdpBinding.POST, responseSkew);
+                SAMLCustomClient.SamlIdpBinding.POST, responseSkew);
     }
 
     /**
@@ -218,11 +218,11 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @param relyingPartyIdentifier      the identifier for the relying party.
      * @param metadata                    the XML metadata obtained from the identity provider.
      * @param samlBinding                 the HTTP method to use for binding to the IdP.
-     * @return The created {@link CustomSamlClient}.
+     * @return The created {@link SAMLCustomClient}.
      * @throws SamlException thrown if any error occur while loading the metadata information.
      */
-    public static CustomSamlClient fromMetadata(String relyingPartyIdentifier, final Reader metadata,
-                                                final CustomSamlClient.SamlIdpBinding samlBinding,
+    public static SAMLCustomClient fromMetadata(String relyingPartyIdentifier, final Reader metadata,
+                                                final SAMLCustomClient.SamlIdpBinding samlBinding,
                                                 final int responseSkew) throws SAMLException {
         final MetadataProvider metadataProvider = createMetadataProvider(metadata);
         final EntityDescriptor entityDescriptor = getEntityDescriptor(metadataProvider);
@@ -245,7 +245,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         final String identityProviderUrl = idpBinding.getLocation();
         final String responseIssuer = entityDescriptor.getEntityID();
 
-        return new CustomSamlClient(relyingPartyIdentifier, identityProviderUrl,
+        return new SAMLCustomClient(relyingPartyIdentifier, identityProviderUrl,
                 responseIssuer, x509Certificates, responseSkew);
     }
 
@@ -407,7 +407,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
     }
 
     private static SingleSignOnService getIdpBinding(final IDPSSODescriptor idpSsoDescriptor,
-                                             final CustomSamlClient.SamlIdpBinding samlBinding) throws SAMLException {
+                                             final SAMLCustomClient.SamlIdpBinding samlBinding) throws SAMLException {
         return idpSsoDescriptor
             .getSingleSignOnServices()
             .stream()
@@ -427,8 +427,8 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
                     .getKeyDescriptors()
                     .stream()
                     .filter(x -> x.getUse() == UsageType.SIGNING)
-                    .flatMap(CustomSamlClient::getDatasWithCertificates)
-                    .map(CustomSamlClient::getFirstCertificate)
+                    .flatMap(SAMLCustomClient::getDatasWithCertificates)
+                    .map(SAMLCustomClient::getFirstCertificate)
                     .collect(Collectors.toList());
 
         } catch (Exception e) {

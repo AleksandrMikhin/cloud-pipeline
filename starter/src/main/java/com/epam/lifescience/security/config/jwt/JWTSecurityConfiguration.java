@@ -5,7 +5,6 @@ import com.epam.lifescience.security.jwt.JWTAuthenticationProvider;
 import com.epam.lifescience.security.jwt.JWTAuthenticationFilter;
 import com.epam.lifescience.security.jwt.JWTTokenVerifier;
 import com.epam.lifescience.security.jwt.RestAuthenticationEntryPoint;
-import com.epam.lifescience.security.utils.ConfigUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,7 +88,7 @@ public class JWTSecurityConfiguration extends WebSecurityConfigurerAdapter {
             http.exceptionHandling()
                     .defaultAuthenticationEntryPointFor(samlEntryPoint, getRequestMatcher(redirectedUrls))
                 .and()
-                    .requestCache().requestCache(requestCache());
+                .requestCache().requestCache(requestCache());
         }
 
         final RequestMatcher securityRequestMatcher = getRequestMatcher(securedUrls);
@@ -101,21 +100,21 @@ public class JWTSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     disableJwtSession ? SessionCreationPolicy.NEVER : SessionCreationPolicy.IF_REQUIRED)
             .and()
             .requestMatcher(securityRequestMatcher)
-            .authorizeRequests()
-                .antMatchers(HttpMethod.OPTIONS).permitAll();
+                .authorizeRequests().antMatchers(HttpMethod.OPTIONS).permitAll();
 
         final String[] publicResources = getPublicResources();
         if (isNotBlankStringArray(publicResources)) {
             http.authorizeRequests().antMatchers(publicResources).permitAll();
         }
-        http.authorizeRequests()
-                .antMatchers(securedUrls).hasAnyAuthority(authoritiesWithSecuredAccess);
 
         if (configurationExtender != null) {
             configurationExtender.configure(http);
         }
 
-        http.addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.authorizeRequests()
+                .antMatchers(securedUrls).hasAnyAuthority(authoritiesWithSecuredAccess)
+            .and()
+            .addFilterBefore(getJwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     private String[] getPublicResources() {

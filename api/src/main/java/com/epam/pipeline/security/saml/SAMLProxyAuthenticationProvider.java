@@ -66,9 +66,9 @@ public class SAMLProxyAuthenticationProvider implements AuthenticationProvider {
 
         if (StringUtils.isNotBlank(auth.getRawSamlResponse())) {
             try {
-                Response decoded = CustomSamlClient.decodeSamlResponse(auth.getRawSamlResponse());
+                Response decoded = SAMLCustomClient.decodeSamlResponse(auth.getRawSamlResponse());
                 String endpointId = decoded.getDestination()    // cut out SSO endpoint
-                    .substring(0, decoded.getDestination().length() - CustomSamlClient.SSO_ENDPOINT.length());
+                    .substring(0, decoded.getDestination().length() - SAMLCustomClient.SSO_ENDPOINT.length());
                 Optional<ExternalServiceEndpoint> endpointOpt = externalServices.stream()
                     .filter(e -> e.getEndpointId().equals(endpointId)).findFirst();
 
@@ -90,7 +90,7 @@ public class SAMLProxyAuthenticationProvider implements AuthenticationProvider {
     private Authentication validateAuthentication(SAMLProxyAuthentication auth, Response decoded, String endpointId,
                                                   ExternalServiceEndpoint endpoint) throws SAMLException {
         try (FileReader metadataReader = new FileReader(endpoint.getMetadataPath())) {
-            CustomSamlClient client = CustomSamlClient.fromMetadata(endpointId, metadataReader, RESPONSE_SKEW);
+            SAMLCustomClient client = SAMLCustomClient.fromMetadata(endpointId, metadataReader, RESPONSE_SKEW);
             client.setMaxAuthenticationAge(maxAuthenticationAge);
             client.validate(decoded);
             return auth;

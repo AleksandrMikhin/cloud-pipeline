@@ -170,14 +170,14 @@ public class SAMLSecurityConfiguration extends WebSecurityConfigurerAdapter {
         if (isNotBlankStringArray(publicResources)) {
             http.authorizeRequests().antMatchers(publicResources).permitAll();
         }
-        http.authorizeRequests()
-                .antMatchers(securedUrls).hasAnyAuthority(authoritiesWithSecuredAccess);
 
         if (configurationExtender != null) {
             configurationExtender.configure(http);
         }
 
-        http.logout().logoutSuccessUrl(logoutSuccessUrl);
+        http.authorizeRequests().antMatchers(securedUrls).hasAnyAuthority(authoritiesWithSecuredAccess)
+            .and()
+            .logout().logoutSuccessUrl(logoutSuccessUrl);
     }
 
     private String[] getPublicResources() {

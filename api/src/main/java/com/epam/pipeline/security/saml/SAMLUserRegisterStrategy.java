@@ -23,6 +23,6 @@ package com.epam.pipeline.security.saml;
  * EXPLICIT_GROUP - requires specific groups pre-registration. If users SAML groups have no intersections with
  * registered security groups the authentication will be failed.
  */
-public enum SamlUserRegisterStrategy {
+public enum SAMLUserRegisterStrategy {
     AUTO, EXPLICIT, EXPLICIT_GROUP
 }

@@ -49,14 +49,14 @@ public class JWTTokenDockerGenerator {
                                    @Autowired final Optional<JWTTokenExpirationSupplier> tokenExpirationSupplier,
                                    @Autowired final Optional<Clock> clockBean) {
         if (publicKeyString == null || privateKeyString == null) {
-                throw new JWTInitializationException("Public and private keys can't be null");
+            throw new JWTInitializationException("Public and private keys can't be null");
         }
         try {
             this.privateKey = (RSAPrivateKey) KeyFactory.getInstance(AuthorizationUtils.RSA_ALGORITHM_NAME)
                     .generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyString)));
             this.publicKey = (RSAPublicKey) KeyFactory.getInstance(AuthorizationUtils.RSA_ALGORITHM_NAME)
                     .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyString)));
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | NullPointerException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new JWTInitializationException(e);
         }
         this.tokenIssueDateGenerator = clockBean.orElseGet(() -> Date::new);
@@ -79,7 +79,7 @@ public class JWTTokenDockerGenerator {
                 .orElseGet(tokenExpirationSupplier::getExpiration);
         final JWTTokenDockerCreator.Builder tokenBuilder = buildDockerToken(claims, service, dockerRegistryClaims);
         tokenBuilder.withExpiresAt(datePlusSeconds(tokenIssueDateGenerator.getToday(), expiration));
-        return tokenBuilder.sign(Algorithm.RSA512(privateKey));
+        return tokenBuilder.sign(Algorithm.RSA512(null, privateKey));
     }
 
     private JWTTokenDockerCreator.Builder buildDockerToken(final JWTTokenClaims claims, final String service,

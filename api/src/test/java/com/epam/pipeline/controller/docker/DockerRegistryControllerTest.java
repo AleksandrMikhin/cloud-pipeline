@@ -60,6 +60,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @WebMvcTest(controllers = DockerRegistryController.class)
 public class DockerRegistryControllerTest extends AbstractControllerTest {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BASIC_AUTH_PREFIX = "Basic ";
     private static final String DOCKER_REGISTRY_URL = SERVLET_PATH + "/dockerRegistry";
     private static final String REGISTER_DOCKER_REGISTRY_URL = DOCKER_REGISTRY_URL + "/register";
     private static final String UPDATE_DOCKER_REGISTRY_URL = DOCKER_REGISTRY_URL + "/update";
@@ -160,7 +162,7 @@ public class DockerRegistryControllerTest extends AbstractControllerTest {
                 .issueTokenForDockerRegistry(TEST_STRING, TEST_STRING, TEST_STRING, TEST_STRING);
 
         final MvcResult mvcResult = performRequest(get(OAUTH_DOCKER_REGISTRY_URL)
-                .header("Authorization", "Basic" + encodedNameAndPass).params(params));
+                .header(AUTHORIZATION_HEADER, BASIC_AUTH_PREFIX + encodedNameAndPass).params(params));
 
         verify(mockDockerRegistryApiService)
                 .issueTokenForDockerRegistry(TEST_STRING, TEST_STRING, TEST_STRING, TEST_STRING);

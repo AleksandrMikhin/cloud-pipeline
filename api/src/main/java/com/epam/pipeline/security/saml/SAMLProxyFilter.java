@@ -90,7 +90,7 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
             String samlResponse = request.getParameter("SAMLResponse");
             if (StringUtils.isNotBlank(samlResponse)) {
                 try {
-                    Response decoded = CustomSamlClient.decodeSamlResponse(samlResponse);
+                    Response decoded = SAMLCustomClient.decodeSamlResponse(samlResponse);
 
                     String audience = ListUtils.emptyIfNull(decoded.getAssertions())
                             .stream().findFirst()
@@ -125,7 +125,7 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
     private void authenticate(String samlResponse, Response decoded, String endpointId,
                               ExternalServiceEndpoint endpoint) throws IOException, SAMLException {
         try (FileReader metadataReader = new FileReader(new File(endpoint.getMetadataPath()))) {
-            CustomSamlClient client = CustomSamlClient.fromMetadata(
+            SAMLCustomClient client = SAMLCustomClient.fromMetadata(
                 endpointId, metadataReader, RESPONSE_SKEW);
             client.setMaxAuthenticationAge(MAX_AUTHENTICATION_AGE);
 

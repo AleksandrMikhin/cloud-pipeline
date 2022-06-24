@@ -49,8 +49,7 @@ task copyLocalDtsStartupScripts(type: Copy) {
 jar {
     archiveName "pipeline.jar"
     manifest {
-        attributes(
-                "Implementation-Version": "$version")
+        attributes("Implementation-Version": "$version")
     }
 }
 

@@ -26,7 +26,6 @@ import com.epam.pipeline.entity.security.acl.AclClass;
 import com.epam.pipeline.entity.security.acl.AclPermissionEntry;
 import com.epam.pipeline.entity.security.acl.AclSecuredEntry;
 import com.epam.pipeline.entity.security.acl.AclSid;
-import com.epam.pipeline.entity.user.Role;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 
@@ -60,16 +59,10 @@ public final class SecurityCreatorUtils {
         return context;
     }
 
-    public static UserContext getUserContext(final Long userId, final String userName,
-                                             final Long roleId, final String roleName) {
+    public static UserContext getUserContext(final Long userId, final String userName, final String roleName) {
         final UserContext context = new UserContext();
         context.setUserId(userId);
         context.setUserName(userName);
-//        final Role role = new Role();
-//        role.setId(roleId);
-//        role.setName(roleName);
-//        role.setUserDefault(true);
-//        role.setPredefined(true);
         context.setRoles(Collections.singletonList(roleName));
         return context;
 

@@ -35,7 +35,7 @@ import com.epam.pipeline.manager.quota.QuotaService;
 import com.epam.pipeline.manager.security.GrantPermissionManager;
 import com.epam.pipeline.manager.user.RoleManager;
 import com.epam.pipeline.manager.user.UserManager;
-import com.epam.pipeline.security.saml.SamlUserRegisterStrategy;
+import com.epam.pipeline.security.saml.SAMLUserRegisterStrategy;
 import com.epam.pipeline.utils.PipelineUserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -69,7 +69,7 @@ public class UserAccessService implements JWTUserAccessService, SAMLUserAccessSe
     @Value("${jwt.validate.token.user:false}")
     private boolean validateUser;
     @Value("${saml.user.auto.create:EXPLICIT}")
-    private SamlUserRegisterStrategy autoCreateUsers;
+    private SAMLUserRegisterStrategy autoCreateUsers;
     @Value("${saml.user.allow.anonymous:false}")
     private boolean allowAnonymous;
     @Value("${saml.user.blocked.attribute:}")

@@ -196,7 +196,7 @@ public class AspectTestBeans {
     protected ToolGroupWithIssuesMapper mockToolGroupWithIssuesMapper;
 
     @MockBean
-    protected JWTTokenVerifier mockTwtTokenVerifier;
+    protected JWTTokenVerifier mockJwtTokenVerifier;
 
     @MockBean
     protected ToolVersionDao mockToolVersionDao;
