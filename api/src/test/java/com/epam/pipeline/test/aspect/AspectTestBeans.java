@@ -112,6 +112,8 @@ import com.epam.pipeline.repository.user.OnlineUsersRepository;
 import com.epam.pipeline.repository.user.PipelineUserRepository;
 import com.epam.pipeline.security.acl.JdbcMutableAclServiceImpl;
 import java.util.concurrent.Executor;
+
+import com.epam.pipeline.security.jwt.JWTTokenDockerGenerator;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -137,6 +139,9 @@ public class AspectTestBeans {
 
     @MockBean
     protected JWTTokenGenerator mockJwtTokenGenerator;
+
+    @MockBean
+    protected JWTTokenDockerGenerator mockJwtTokenDockerGenerator;
 
     @MockBean
     protected MetadataDao mockMetadataDao;
