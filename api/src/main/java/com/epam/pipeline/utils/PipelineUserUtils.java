@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO: Some logic of this class might be moved directly to the PipelineUser class
 @SuppressWarnings("HideUtilityClassConstructor")
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PipelineUserUtils {
