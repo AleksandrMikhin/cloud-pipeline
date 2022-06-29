@@ -16,17 +16,16 @@
 
 package com.epam.pipeline.test.creator.security;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.Result;
 import com.epam.pipeline.controller.vo.EntityVO;
 import com.epam.pipeline.entity.AbstractSecuredEntity;
 import com.epam.pipeline.entity.datastorage.aws.S3bucketDataStorage;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.security.acl.AclClass;
 import com.epam.pipeline.entity.security.acl.AclPermissionEntry;
 import com.epam.pipeline.entity.security.acl.AclSecuredEntry;
 import com.epam.pipeline.entity.security.acl.AclSid;
-import com.epam.pipeline.entity.user.Role;
-import com.epam.pipeline.security.UserContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 
@@ -42,9 +41,9 @@ public final class SecurityCreatorUtils {
 
     public static final TypeReference<Result<Map<AclClass, List<S3bucketDataStorage>>>> ACL_SECURED_ENTITY_MAP_TYPE =
             new TypeReference<Result<Map<AclClass, List<S3bucketDataStorage>>>>() {};
-    public static final TypeReference<JwtRawToken> JWT_RAW_TOKEN_INSTANCE_TYPE = new TypeReference<JwtRawToken>() {};
-    public static final TypeReference<Result<JwtRawToken>> JWT_RAW_TOKEN_TYPE =
-            new TypeReference<Result<JwtRawToken>>() {};
+    public static final TypeReference<JWTRawToken> JWT_RAW_TOKEN_INSTANCE_TYPE = new TypeReference<JWTRawToken>() {};
+    public static final TypeReference<Result<JWTRawToken>> JWT_RAW_TOKEN_TYPE =
+            new TypeReference<Result<JWTRawToken>>() {};
 
     private SecurityCreatorUtils() {
 
@@ -60,17 +59,11 @@ public final class SecurityCreatorUtils {
         return context;
     }
 
-    public static UserContext getUserContext(final Long userId, final String userName,
-                                             final Long roleId, final String roleName) {
+    public static UserContext getUserContext(final Long userId, final String userName, final String roleName) {
         final UserContext context = new UserContext();
         context.setUserId(userId);
         context.setUserName(userName);
-        final Role role = new Role();
-        role.setId(roleId);
-        role.setName(roleName);
-        role.setUserDefault(true);
-        role.setPredefined(true);
-        context.setRoles(Collections.singletonList(role));
+        context.setRoles(Collections.singletonList(roleName));
         return context;
 
     }
@@ -85,8 +78,8 @@ public final class SecurityCreatorUtils {
         return new AclSid();
     }
 
-    public static JwtRawToken getJwtRawToken() {
-        return new JwtRawToken(TEST_STRING);
+    public static JWTRawToken getJwtRawToken() {
+        return new JWTRawToken(TEST_STRING);
     }
 
     public static EntityVO getEntityVO(final Long id, final AclClass aclClass) {

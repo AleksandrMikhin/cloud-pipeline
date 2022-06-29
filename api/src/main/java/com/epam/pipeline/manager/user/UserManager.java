@@ -16,6 +16,9 @@
 
 package com.epam.pipeline.manager.user;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
+import com.epam.lifescience.security.jwt.JWTAuthenticationToken;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.controller.vo.EntityVO;
@@ -26,7 +29,6 @@ import com.epam.pipeline.dao.user.RoleDao;
 import com.epam.pipeline.dao.user.UserDao;
 import com.epam.pipeline.entity.info.UserInfo;
 import com.epam.pipeline.entity.metadata.PipeConfValue;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.security.acl.AclClass;
 import com.epam.pipeline.entity.user.CustomControl;
 import com.epam.pipeline.entity.user.DefaultRoles;
@@ -48,9 +50,8 @@ import com.epam.pipeline.manager.security.GrantPermissionHandler;
 import com.epam.pipeline.manager.security.GrantPermissionManager;
 import com.epam.pipeline.manager.utils.UserUtils;
 import com.epam.pipeline.repository.user.PipelineUserRepository;
-import com.epam.pipeline.security.UserContext;
+import com.epam.pipeline.utils.PipelineUserUtils;
 import lombok.extern.slf4j.Slf4j;
-import com.epam.pipeline.security.jwt.JwtAuthenticationToken;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -160,7 +161,7 @@ public class UserManager {
     public UserContext loadUserContext(final String name) {
         PipelineUser pipelineUser = userDao.loadUserByName(name);
         Assert.notNull(pipelineUser, messageHelper.getMessage(MessageConstants.ERROR_USER_NAME_NOT_FOUND, name));
-        return new UserContext(pipelineUser);
+        return getUserContext(pipelineUser);
     }
 
     public ImpersonationStatus getImpersonationStatus() {
@@ -173,7 +174,7 @@ public class UserManager {
      * @param expiration token expiration time (seconds)
      * @return generated token
      */
-    public JwtRawToken issueToken(final String userName, final Long expiration) {
+    public JWTRawToken issueToken(final String userName, final Long expiration) {
         final UserContext userContext = loadUserContext(userName);
         return authManager.issueToken(userContext, expiration);
     }
@@ -553,8 +554,8 @@ public class UserManager {
 
     private void setAuthAsUser(final String userName) {
         final PipelineUser pipelineUser = loadUserByName(userName);
-        final UserContext userContext = new UserContext(pipelineUser);
-        final JwtAuthenticationToken userAuth = new JwtAuthenticationToken(userContext, userContext.getAuthorities());
+        final UserContext userContext = getUserContext(pipelineUser);
+        final JWTAuthenticationToken userAuth = new JWTAuthenticationToken(userContext, userContext.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(userAuth);
     }
 
@@ -591,4 +592,13 @@ public class UserManager {
         }
         quotaService.attachQuotaInfo(pipelineUsers);
     }
+
+    private static UserContext getUserContext(final PipelineUser pipelineUser) {
+        final UserContext userContext = new UserContext(pipelineUser.getId(), pipelineUser.getUserName());
+        userContext.setGroups(pipelineUser.getGroups());
+        userContext.setRoles(PipelineUserUtils.getRoleNames(pipelineUser));
+        return userContext;
+    }
+
+
 }

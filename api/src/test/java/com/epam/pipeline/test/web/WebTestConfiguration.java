@@ -16,8 +16,8 @@
 
 package com.epam.pipeline.test.web;
 
+import com.epam.lifescience.security.config.jwt.JWTSecurityConfiguration;
 import com.epam.pipeline.app.AppMVCConfiguration;
-import com.epam.pipeline.app.JWTSecurityConfiguration;
 import com.epam.pipeline.app.RestConfiguration;
 import com.epam.pipeline.test.CommonTestContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

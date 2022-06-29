@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.acl.docker;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.vo.docker.DockerRegistryVO;
 import com.epam.pipeline.entity.AbstractHierarchicalEntity;
 import com.epam.pipeline.entity.AbstractSecuredEntity;
@@ -24,7 +25,6 @@ import com.epam.pipeline.entity.pipeline.DockerRegistry;
 import com.epam.pipeline.entity.pipeline.DockerRegistryEventEnvelope;
 import com.epam.pipeline.entity.pipeline.Tool;
 import com.epam.pipeline.entity.pipeline.ToolGroup;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.manager.docker.DockerRegistryManager;
 import com.epam.pipeline.security.acl.AclPermission;
 import com.epam.pipeline.test.acl.AbstractAclTest;
@@ -60,7 +60,7 @@ public class DockerRegistryApiServiceTest extends AbstractAclTest {
     private final Tool tool = DockerCreatorUtils.getTool(ANOTHER_SIMPLE_USER);
     private final List<Tool> tools = Collections.singletonList(tool);
     private final DockerRegistryEventEnvelope eventEnvelope = DockerCreatorUtils.getDockerRegistryEventEnvelope();
-    private final JwtRawToken jwtRawToken = new JwtRawToken(TEST_STRING);
+    private final JWTRawToken jwtRawToken = new JWTRawToken(TEST_STRING);
     private final ToolGroup emptyToolGroupWithoutPermission =
             DockerCreatorUtils.getToolGroup(ID_3, ANOTHER_SIMPLE_USER);
     private final Tool toolRead1 = DockerCreatorUtils.getTool(ANOTHER_SIMPLE_USER);

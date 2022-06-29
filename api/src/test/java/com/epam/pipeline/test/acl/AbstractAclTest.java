@@ -16,12 +16,12 @@
 
 package com.epam.pipeline.test.acl;
 
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.entity.AbstractSecuredEntity;
 import com.epam.pipeline.manager.EntityManager;
 import com.epam.pipeline.manager.quota.QuotaService;
 import com.epam.pipeline.manager.security.AuthManager;
 import com.epam.pipeline.manager.user.UserManager;
-import com.epam.pipeline.security.UserContext;
 import com.epam.pipeline.security.acl.JdbcMutableAclServiceImpl;
 import lombok.AllArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;

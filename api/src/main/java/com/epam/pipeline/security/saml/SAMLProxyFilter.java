@@ -17,12 +17,14 @@
 package com.epam.pipeline.security.saml;
 
 import com.coveo.saml.SamlResponse;
+import com.epam.lifescience.security.entity.UserContext;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.manager.preference.PreferenceManager;
+import com.epam.pipeline.manager.preference.SystemPreferences;
 import com.epam.pipeline.security.ExternalServiceEndpoint;
 import com.epam.pipeline.security.UserAccessService;
-import com.epam.pipeline.security.UserContext;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -36,8 +38,6 @@ import org.opensaml.saml2.core.Audience;
 import org.opensaml.saml2.core.Response;
 import org.opensaml.xml.schema.XSAny;
 import org.opensaml.xml.schema.XSString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.AntPathMatcher;
@@ -59,10 +59,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.epam.pipeline.manager.preference.SystemPreferences.SYSTEM_EXTERNAL_SERVICES_ENDPOINTS;
-
+@Slf4j
 public class SAMLProxyFilter extends OncePerRequestFilter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SAMLProxyFilter.class);
     private static final int MAX_AUTHENTICATION_AGE = 93600;
     private static final int RESPONSE_SKEW = 1200;
 
@@ -85,14 +83,14 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
         }
 
         List<ExternalServiceEndpoint> externalServices = preferenceManager.getPreference(
-            SYSTEM_EXTERNAL_SERVICES_ENDPOINTS);
+                SystemPreferences.SYSTEM_EXTERNAL_SERVICES_ENDPOINTS);
         if (CollectionUtils.isEmpty(externalServices)) {
-            LOGGER.warn(messageHelper.getMessage(MessageConstants.ERROR_PROXY_SECURITY_CONFIG_MISSING));
+            log.warn(messageHelper.getMessage(MessageConstants.ERROR_PROXY_SECURITY_CONFIG_MISSING));
         } else {
             String samlResponse = request.getParameter("SAMLResponse");
             if (StringUtils.isNotBlank(samlResponse)) {
                 try {
-                    Response decoded = CustomSamlClient.decodeSamlResponse(samlResponse);
+                    Response decoded = SAMLCustomClient.decodeSamlResponse(samlResponse);
 
                     String audience = ListUtils.emptyIfNull(decoded.getAssertions())
                             .stream().findFirst()
@@ -106,7 +104,7 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
                             .map(Audience::getAudienceURI)
                             .orElse(StringUtils.EMPTY);
 
-                    LOGGER.debug("Received SAMLResponse for audience: {}", audience);
+                    log.debug("Received SAMLResponse for audience: {}", audience);
 
                     Optional<ExternalServiceEndpoint> endpointOpt = externalServices.stream()
                         .filter(e -> !StringUtils.EMPTY.equals(audience) &&
@@ -116,7 +114,7 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
                         authenticate(samlResponse, decoded, audience, endpointOpt.get());
                     }
                 } catch (SAMLException e) {
-                    LOGGER.warn(e.getMessage(), e);
+                    log.warn(e.getMessage(), e);
                 }
             }
         }
@@ -127,7 +125,7 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
     private void authenticate(String samlResponse, Response decoded, String endpointId,
                               ExternalServiceEndpoint endpoint) throws IOException, SAMLException {
         try (FileReader metadataReader = new FileReader(new File(endpoint.getMetadataPath()))) {
-            CustomSamlClient client = CustomSamlClient.fromMetadata(
+            SAMLCustomClient client = SAMLCustomClient.fromMetadata(
                 endpointId, metadataReader, RESPONSE_SKEW);
             client.setMaxAuthenticationAge(MAX_AUTHENTICATION_AGE);
 
@@ -137,8 +135,8 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
             final List<String> groups = readAuthorities(attributes, endpoint.getAuthorities());
             final Map<String, String> userAttributes = readAttributes(attributes, endpoint.getSamlAttributes());
 
-            UserContext userContext = accessService.parseUser(userName, groups, userAttributes);
-            LOGGER.debug("Found user by name {}", userName);
+            UserContext userContext = accessService.getSamlUser(userName, groups, userAttributes);
+            log.debug("Found user by name {}", userName);
 
             userContext.setExternal(endpoint.isExternal());
             SecurityContextHolder.getContext()
@@ -159,7 +157,7 @@ public class SAMLProxyFilter extends OncePerRequestFilter {
                     String key = splittedRecord[0];
                     String value = splittedRecord[1];
                     if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
-                        LOGGER.error("Can not parse saml user attributes property.");
+                        log.error("Can not parse saml user attributes property.");
                         return null;
                     }
                     List<String> attributeValues = attributes.get(value);

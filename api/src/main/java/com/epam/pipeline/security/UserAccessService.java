@@ -15,12 +15,15 @@
 
 package com.epam.pipeline.security;
 
-
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
+import com.epam.lifescience.security.entity.jwt.JWTTokenClaims;
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.exception.jwt.TokenVerificationException;
+import com.epam.lifescience.security.service.JWTUserAccessService;
+import com.epam.lifescience.security.service.SAMLUserAccessService;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.dto.quota.QuotaActionType;
-import com.epam.pipeline.entity.security.JwtRawToken;
-import com.epam.pipeline.entity.security.JwtTokenClaims;
 import com.epam.pipeline.entity.user.DefaultRoles;
 import com.epam.pipeline.entity.user.GroupStatus;
 import com.epam.pipeline.entity.user.PipelineUser;
@@ -32,10 +35,11 @@ import com.epam.pipeline.manager.quota.QuotaService;
 import com.epam.pipeline.manager.security.GrantPermissionManager;
 import com.epam.pipeline.manager.user.RoleManager;
 import com.epam.pipeline.manager.user.UserManager;
-import com.epam.pipeline.security.jwt.TokenVerificationException;
-import com.epam.pipeline.security.saml.SamlUserRegisterStrategy;
+import com.epam.pipeline.security.saml.SAMLUserRegisterStrategy;
+import com.epam.pipeline.utils.PipelineUserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.LockedException;
@@ -50,9 +54,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
-public class UserAccessService {
+@Service
+public class UserAccessService implements JWTUserAccessService, SAMLUserAccessService {
 
     @Autowired
     private UserManager userManager;
@@ -64,24 +68,45 @@ public class UserAccessService {
     private GrantPermissionManager permissionManager;
     @Value("${jwt.validate.token.user:false}")
     private boolean validateUser;
-    @Value("${saml.user.auto.create: EXPLICIT}")
-    private SamlUserRegisterStrategy autoCreateUsers;
-    @Value("${saml.user.allow.anonymous: false}")
+    @Value("${saml.user.auto.create:EXPLICIT}")
+    private SAMLUserRegisterStrategy autoCreateUsers;
+    @Value("${saml.user.allow.anonymous:false}")
     private boolean allowAnonymous;
+    @Value("${saml.user.blocked.attribute:}")
+    private String blockedAttribute;
+    @Value("${saml.user.blocked.attribute.true.val:true}")
+    private String blockedAttributeTrueValue;
+
     @Autowired
     private PreferenceManager preferenceManager;
     @Autowired
     private QuotaService quotaService;
 
-    public UserContext parseUser(final String userName,
-                                 final List<String> groups,
-                                 final Map<String, String> attributes) {
-        return Optional.ofNullable(userManager.loadUserByName(userName))
+    @Override
+    public UserContext getSamlUser(final String userName, final List<String> groups,
+                                   final Map<String, String> attributes) {
+
+        final UserContext userContext = Optional.ofNullable(userManager.loadUserByName(userName))
                 .map(loadedUser -> processRegisteredUser(userName, groups, attributes, loadedUser))
                 .orElseGet(() -> processNewUser(userName, groups, attributes));
+
+        validateUserContextGroupsBlockStatus(userContext);
+
+        if (hasBlockedStatusAttribute(attributes)) {
+            Optional.ofNullable(userContext.getUserId())
+                    .ifPresent(id -> userManager.updateUserBlockingStatus(id, true));
+            throwUserIsBlocked(userName);
+        }
+        return userContext;
     }
 
-    public UserContext getJwtUser(final JwtRawToken jwtRawToken, final JwtTokenClaims claims) {
+    private boolean hasBlockedStatusAttribute(final Map<String, String> attributes) {
+        return StringUtils.isNotBlank(blockedAttribute) &&
+                blockedAttributeTrueValue.equalsIgnoreCase(attributes.get(blockedAttribute));
+    }
+
+    @Override
+    public UserContext getJwtUser(final JWTRawToken jwtRawToken, final JWTTokenClaims claims) {
         final UserContext jwtUser = new UserContext(jwtRawToken, claims);
         if (!validateUser) {
             return jwtUser;
@@ -101,13 +126,14 @@ public class UserAccessService {
         }
         validateUserBlockStatus(pipelineUser);
         validateUserGroupsBlockStatus(pipelineUser);
-        jwtUser.setRoles(pipelineUser.getRoles());
+        jwtUser.setRoles(PipelineUserUtils.getRoleNames(pipelineUser));
         jwtUser.setGroups(pipelineUser.getGroups());
         return jwtUser;
     }
 
     public void validateUserBlockStatus(final PipelineUser user) {
         if (user.isBlocked()) {
+            log.info("Authentication failed! User {} is blocked!", user.getUserName());
             throwUserIsBlocked(user.getUserName());
         }
         if (user.isAdmin()) {
@@ -120,26 +146,30 @@ public class UserAccessService {
                 });
     }
 
-    public void throwUserIsBlocked(final String userName) {
-        log.info("Authentication failed! User {} is blocked!", userName);
-        throw new LockedException("User: " + userName + " is blocked!");
+    public void validateUserContextGroupsBlockStatus(final UserContext userContext) {
+        final List<String> groups = userContext.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        validateGroupsBlockStatus(userContext.getUsername(), groups);
     }
 
     public void validateUserGroupsBlockStatus(final PipelineUser user) {
-        List<GrantedAuthority> authorities = new UserContext(user).getAuthorities();
-        final List<String> groups = ListUtils.emptyIfNull(authorities)
+        final List<String> groups = PipelineUserUtils.getAuthorities(user);
+        validateGroupsBlockStatus(user.getUserName(), groups);
+    }
+
+    private void validateGroupsBlockStatus(final String userName, final List<String > groups) {
+        final boolean blocked = ListUtils.emptyIfNull(userManager.loadGroupBlockingStatus(groups))
                 .stream()
-                .map(GrantedAuthority::getAuthority)
-                .distinct()
-                .collect(Collectors.toList());
-        final boolean isValidGroupList = ListUtils.emptyIfNull(userManager.loadGroupBlockingStatus(groups))
-                .stream()
-                .noneMatch(GroupStatus::isBlocked);
-        if (!isValidGroupList) {
-            log.info("Authentication failed! User {} is blocked due to one of his groups is blocked!",
-                    user.getUserName());
-            throw new LockedException("User: " + user.getUserName() + " is blocked!");
+                .anyMatch(GroupStatus::isBlocked);
+        if (blocked) {
+            log.info("Authentication failed! User {} is blocked due to one of his groups is blocked!", userName);
+            throwUserIsBlocked(userName);
         }
+    }
+
+    public void throwUserIsBlocked(final String userName) {
+        throw new LockedException("User: " + userName + " is blocked!");
     }
 
     private UserContext processRegisteredUser(final String userName, final List<String> groups,
@@ -156,9 +186,9 @@ public class UserAccessService {
             final PipelineUser updatedUser =
                     userManager.updateUserSAMLInfo(loadedUser.getId(), userName, roles, groups, attributes);
             log.debug("Updated user groups {} ", groups);
-            return new UserContext(updatedUser);
+            return PipelineUserUtils.toUserContext(updatedUser);
         } else {
-            return new UserContext(loadedUser);
+            return PipelineUserUtils.toUserContext(loadedUser);
         }
     }
 
@@ -202,8 +232,8 @@ public class UserAccessService {
         userManager.updateUserFirstLoginDate(createdUser.getId(), DateUtils.nowUTC());
         log.debug("Created user {} with groups {}", userName, groups);
         final UserContext userContext = new UserContext(createdUser.getId(), userName);
+        userContext.setRoles(PipelineUserUtils.getRoleNames(createdUser));
         userContext.setGroups(createdUser.getGroups());
-        userContext.setRoles(createdUser.getRoles());
         return userContext;
     }
 
@@ -211,7 +241,7 @@ public class UserAccessService {
         log.debug("Created anonymous user {} with groups {}", userName, groups);
         final UserContext userContext = new UserContext(null, userName);
         userContext.setGroups(groups);
-        userContext.setRoles(Collections.singletonList(DefaultRoles.ROLE_ANONYMOUS_USER.getRole()));
+        userContext.setRoles(Collections.singletonList(DefaultRoles.ROLE_ANONYMOUS_USER.getName()));
         return userContext;
     }
 

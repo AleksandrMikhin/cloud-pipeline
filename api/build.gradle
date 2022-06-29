@@ -48,8 +48,7 @@ task copyLocalDtsStartupScripts(type: Copy) {
 jar {
     archiveName "pipeline.jar"
     manifest {
-        attributes(
-                "Implementation-Version": "$version")
+        attributes("Implementation-Version": "$version")
     }
 }
 
@@ -74,14 +73,23 @@ repositories {
     mavenCentral()
     maven {
         url System.getProperty("user.dir") + "/api/common"
-
     }
+    maven {
+        url = uri("https://maven.pkg.github.com/SilinPavel/security-config-starter")
+        credentials {
+            username = System.getenv('SC_GITHUB_PACKAGES_USERNAME')
+            password = System.getenv('SC_GITHUB_PACKAGES_TOKEN')
+        }
+    }
+
 }
 
 ext {
     versionSpringBoot = "1.5.2.RELEASE"
     versionSpringSession = "1.3.1.RELEASE"
     versionElasticsearch = "6.8.3"
+    springSamlSecurityExtensionVersion = "1.0.2.RELEASE"
+    jwtSecurityExtensionVersion = "3.19.1"
 }
 
 ext["elasticsearch.version"] = project.ext.versionElasticsearch
@@ -93,6 +101,9 @@ build.mustRunAfter apiDeps
 bootRepackage.mustRunAfter apiDeps
 
 dependencies {
+    // Security-config-starter library
+    implementation group: "com.epam.lifescience", name: "security-config-starter", version: "1.0-SNAPSHOT"
+
     // Spring Boot
     configurations {
         all*.exclude module : "spring-boot-starter-logging"
@@ -107,8 +118,8 @@ dependencies {
 
     //security
     compile("org.springframework.boot:spring-boot-starter-security")
-    compile "com.auth0:java-jwt:3.1.0"
-    compile "org.springframework.security.extensions:spring-security-saml2-core:1.0.2.RELEASE"
+    compile "com.auth0:java-jwt:$jwtSecurityExtensionVersion"
+    compile "org.springframework.security.extensions:spring-security-saml2-core:$springSamlSecurityExtensionVersion"
     compile group: "org.springframework.security", name: "spring-security-acl", version: "4.2.2.RELEASE"
     compile group: "net.sf.ehcache", name: "ehcache", version: "2.10.4"
     compile group: "org.springframework", name: "spring-context", version: "4.3.7.RELEASE"

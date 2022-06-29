@@ -517,8 +517,8 @@ public class SystemPreferences {
             "$env:CP_TASK_PATH = Join-Path $(pwd) \"task.ps1\"\n" +
             "python .\\launch.py",
             LAUNCH_GROUP, PreferenceValidators.isNotBlank);
-    public static final IntPreference LAUNCH_JWT_TOKEN_EXPIRATION = new IntPreference(
-        "launch.jwt.token.expiration", 2592000, LAUNCH_GROUP, isGreaterThan(0));
+    public static final LongPreference LAUNCH_JWT_TOKEN_EXPIRATION = new LongPreference(
+        "launch.jwt.token.expiration", 2592000L, LAUNCH_GROUP, isGreaterThan(0));
     public static final ObjectPreference<EnvVarsSettings> LAUNCH_ENV_PROPERTIES = new ObjectPreference<>(
         "launch.env.properties", null, new TypeReference<EnvVarsSettings>() {}, LAUNCH_GROUP,
         isNullOrValidJson(new TypeReference<EnvVarsSettings>() {}));

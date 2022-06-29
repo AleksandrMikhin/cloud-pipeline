@@ -16,11 +16,11 @@
 
 package com.epam.pipeline.manager.security;
 
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.jwt.JWTAuthenticationToken;
 import com.epam.pipeline.entity.AbstractSecuredEntity;
 import com.epam.pipeline.entity.user.DefaultRoles;
 import com.epam.pipeline.manager.user.UserManager;
-import com.epam.pipeline.security.UserContext;
-import com.epam.pipeline.security.jwt.JwtAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.PermissionEvaluator;
@@ -120,6 +120,6 @@ public class CheckPermissionHelper {
 
     private Authentication getAuthentication(final String userName) {
         final UserContext userContext = userManager.loadUserContext(userName);
-        return new JwtAuthenticationToken(userContext, userContext.getAuthorities());
+        return new JWTAuthenticationToken(userContext, userContext.getAuthorities());
     }
 }

@@ -16,12 +16,12 @@
 
 package com.epam.pipeline.acl.docker;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.vo.docker.DockerRegistryVO;
 import com.epam.pipeline.entity.docker.DockerRegistryList;
 import com.epam.pipeline.entity.pipeline.DockerRegistry;
 import com.epam.pipeline.entity.pipeline.DockerRegistryEventEnvelope;
 import com.epam.pipeline.entity.pipeline.Tool;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.manager.docker.DockerRegistryManager;
 import com.epam.pipeline.manager.security.acl.AclTree;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,8 +79,8 @@ public class DockerRegistryApiService {
         return registryManager.notifyDockerRegistryEvents(registry, events);
     }
 
-    public JwtRawToken issueTokenForDockerRegistry(String userName, String token,
-            String dockerRegistryHost, String scope) {
+    public JWTRawToken issueTokenForDockerRegistry(String userName, String token,
+                                                   String dockerRegistryHost, String scope) {
         return registryManager.issueTokenForDockerRegistry(userName, token, dockerRegistryHost, scope);
     }
 

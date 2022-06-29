@@ -16,6 +16,7 @@
 
 package com.epam.pipeline.manager.docker.scan;
 
+import com.epam.lifescience.security.utils.ConfigUtils;
 import com.epam.pipeline.common.MessageConstants;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.entity.docker.ManifestV2;
@@ -49,7 +50,6 @@ import com.epam.pipeline.manager.pipeline.ToolScanInfoManager;
 import com.epam.pipeline.manager.preference.AbstractSystemPreference;
 import com.epam.pipeline.manager.preference.PreferenceManager;
 import com.epam.pipeline.manager.preference.SystemPreferences;
-import com.epam.pipeline.utils.URLUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -172,7 +172,7 @@ public class AggregatingToolScanManager implements ToolScanManager {
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
             Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(URLUtils.getUrlWithTrailingSlash(baseUrl))
+                .baseUrl(ConfigUtils.getUrlWithTrailingSlash(baseUrl))
                 .addConverterFactory(JacksonConverterFactory.create(objectMapper))
                 .client(client)
                 .build();

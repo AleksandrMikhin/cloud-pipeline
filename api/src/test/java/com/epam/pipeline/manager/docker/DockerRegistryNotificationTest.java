@@ -118,7 +118,7 @@ public class DockerRegistryNotificationTest extends AbstractAclTest {
 
     @Before
     public void setUp() {
-        mockUserContext(getUserContext(ID, SIMPLE_USER, ID, SIMPLE_USER_ROLE));
+        mockUserContext(getUserContext(ID, SIMPLE_USER, SIMPLE_USER_ROLE));
         MockitoAnnotations.initMocks(this);
     }
 

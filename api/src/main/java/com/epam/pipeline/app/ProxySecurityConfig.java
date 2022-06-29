@@ -16,6 +16,9 @@
 
 package com.epam.pipeline.app;
 
+import com.epam.lifescience.security.jwt.RestAuthenticationEntryPoint;
+import com.epam.pipeline.security.saml.SAMLProxyAuthenticationProvider;
+import com.epam.pipeline.security.saml.SAMLProxyFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,23 +31,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import com.epam.pipeline.security.jwt.RestAuthenticationEntryPoint;
-import com.epam.pipeline.security.saml.SAMLProxyAuthenticationProvider;
-import com.epam.pipeline.security.saml.SAMLProxyFilter;
 
 @Configuration
-@Order(1)
+@Order(0)
 public class ProxySecurityConfig extends WebSecurityConfigurerAdapter {
-
     private static final String RESTAPI_PROXY = "/restapi/proxy/**";
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(proxyAuthenticationProvider());
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable()
             .exceptionHandling().authenticationEntryPoint(new RestAuthenticationEntryPoint())
             .and()
@@ -60,8 +59,8 @@ public class ProxySecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public FilterRegistrationBean registration(SAMLProxyFilter filter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean(filter);
+    public FilterRegistrationBean registration(final SAMLProxyFilter filter) {
+        final FilterRegistrationBean registration = new FilterRegistrationBean(filter);
         registration.setEnabled(false);
         return registration;
     }

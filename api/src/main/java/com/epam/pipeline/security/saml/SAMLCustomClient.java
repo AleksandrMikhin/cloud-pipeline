@@ -18,8 +18,9 @@ package com.epam.pipeline.security.saml;
 
 import com.coveo.saml.SamlException;
 import com.coveo.saml.SamlResponse;
-import com.epam.pipeline.utils.URLUtils;
+import com.epam.lifescience.security.utils.ConfigUtils;
 import com.sun.org.apache.xerces.internal.parsers.DOMParser;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLException;
 import org.opensaml.common.binding.decoding.BasicURLComparator;
@@ -48,10 +49,9 @@ import org.opensaml.xml.signature.SignatureValidator;
 import org.opensaml.xml.signature.X509Data;
 import org.opensaml.xml.util.Base64;
 import org.opensaml.xml.validation.ValidationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.saml.context.SAMLMessageContext;
 import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
+import org.springframework.util.Assert;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -69,8 +69,8 @@ import java.util.stream.Stream;
 import static org.springframework.security.saml.util.SAMLUtil.isDateTimeSkewValid;
 
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
-public class CustomSamlClient extends WebSSOProfileConsumerImpl {
-    private static final Logger logger = LoggerFactory.getLogger(CustomSamlClient.class);
+@Slf4j
+public class SAMLCustomClient extends WebSSOProfileConsumerImpl {
     public static final String SSO_ENDPOINT = "/saml/SSO";
 
     public enum SamlIdpBinding {
@@ -78,12 +78,12 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         Redirect;
     }
 
-    private int responseSkew;
-    private String relyingPartyIdentifier;
-    private String identityProviderUrl;
-    private String responseIssuer;
-    private List<Credential> credentials;
-    protected URIComparator uriComparator = new BasicURLComparator();
+    private final int responseSkew;
+    private final String relyingPartyIdentifier;
+    private final String identityProviderUrl;
+    private final String responseIssuer;
+    private final List<Credential> credentials;
+    protected final URIComparator uriComparator = new BasicURLComparator();
 
     /**
      * Returns the url where SAML requests should be posted.
@@ -105,31 +105,21 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @param responseSkew
      * @throws SamlException thrown if any error occur while loading the provider information.
      */
-    public CustomSamlClient(
-        String relyingPartyIdentifier,
-        String identityProviderUrl,
-        String responseIssuer,
-        List<X509Certificate> certificates,
-        int responseSkew) throws SAMLException {
+    public SAMLCustomClient(final String relyingPartyIdentifier,
+                            final String identityProviderUrl,
+                            final String responseIssuer,
+                            final List<X509Certificate> certificates,
+                            final int responseSkew) throws SAMLException {
+        Assert.notNull(relyingPartyIdentifier, "relyingPartyIdentifier");
+        Assert.notNull(identityProviderUrl, "identityProviderUrl");
+        Assert.notNull(responseIssuer, "responseIssuer");
+        Assert.notEmpty(certificates, "certificates");
+
         this.responseSkew = responseSkew;
-
-        if (relyingPartyIdentifier == null) {
-            throw new IllegalArgumentException("relyingPartyIdentifier");
-        }
-        if (identityProviderUrl == null) {
-            throw new IllegalArgumentException("identityProviderUrl");
-        }
-        if (responseIssuer == null) {
-            throw new IllegalArgumentException("responseIssuer");
-        }
-        if (certificates == null || certificates.isEmpty()) {
-            throw new IllegalArgumentException("certificates");
-        }
-
         this.relyingPartyIdentifier = relyingPartyIdentifier;
         this.identityProviderUrl = identityProviderUrl;
         this.responseIssuer = responseIssuer;
-        credentials = certificates.stream().map(CustomSamlClient::getCredential).collect(Collectors.toList());
+        credentials = certificates.stream().map(SAMLCustomClient::getCredential).collect(Collectors.toList());
     }
 
     /**
@@ -139,10 +129,8 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @return An {@link SamlResponse} object containing information decoded from the SAML response.
      * @throws SamlException if the signature is invalid, or if any other error occurs.
      */
-    public SamlResponse decodeAndValidateSamlResponse(String encodedResponse) throws SAMLException {
-        Response response = decodeSamlResponse(encodedResponse);
-
-        return validate(response);
+    public SamlResponse decodeAndValidateSamlResponse(final String encodedResponse) throws SAMLException {
+        return validate(decodeSamlResponse(encodedResponse));
     }
 
     /**
@@ -151,18 +139,18 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @return An {@link Response} object containing information decoded from the SAML response.
      * @throws SAMLException
      */
-    public static Response decodeSamlResponse(String encodedResponse) throws SAMLException {
-        String decodedResponse;
+    public static Response decodeSamlResponse(final String encodedResponse) throws SAMLException {
+        final String decodedResponse;
         try {
             decodedResponse = new String(Base64.decode(encodedResponse), "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             throw new SAMLException("Cannot decode base64 encoded response", ex);
         }
 
-        logger.trace("Validating SAML response: " + decodedResponse);
+        log.trace("Validating SAML response: " + decodedResponse);
 
         try {
-            DOMParser parser = createDOMParser();
+            final DOMParser parser = createDOMParser();
             parser.parse(new InputSource(new StringReader(decodedResponse)));
             return (Response) Configuration.getUnmarshallerFactory()
                         .getUnmarshaller(parser.getDocument().getDocumentElement())
@@ -178,29 +166,29 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @return An {@link SamlResponse} object containing information decoded from the SAML response.
      * @throws SamlException if the signature is invalid, or if any other error occurs.
      */
-    public SamlResponse validate(Response response) throws SAMLException {
+    public SamlResponse validate(final Response response) throws SAMLException {
         validateResponse(response);
         validateSignature(response);
         validateIssueTime(response);
         validateAssertion(response);
         validateDestination(response);
 
-        Assertion assertion = response.getAssertions().get(0);
+        final Assertion assertion = response.getAssertions().get(0);
         return new SamlResponse(assertion);
     }
 
-    private void validateIssueTime(Response response) throws SAMLException {
-        DateTime time = response.getIssueInstant();
+    private void validateIssueTime(final Response response) throws SAMLException {
+        final DateTime time = response.getIssueInstant();
         if (!isDateTimeSkewValid(responseSkew, time)) {
             throw new SAMLException("Response issue time is either too old or with date in the future, skew "
                                     + responseSkew + ", time " + time);
         }
     }
 
-    private void validateDestination(Response response) throws SAMLException {
-        String destination = response.getDestination();
+    private void validateDestination(final Response response) throws SAMLException {
+        final String destination = response.getDestination();
         if (destination != null && !uriComparator.compare(destination,
-                URLUtils.getUrlWithoutTrailingSlash(relyingPartyIdentifier) + SSO_ENDPOINT)) {
+                ConfigUtils.getUrlWithoutTrailingSlash(relyingPartyIdentifier) + SSO_ENDPOINT)) {
             throw new SAMLException("Intended destination " + destination
                                     + " doesn't match any of the endpoint URLs on endpoint ");
         }
@@ -213,14 +201,13 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      *
      * @param relyingPartyIdentifier      the identifier for the relying party.
      * @param metadata                    the XML metadata obtained from the identity provider.
-     * @return The created {@link CustomSamlClient}.
+     * @return The created {@link SAMLCustomClient}.
      * @throws SamlException thrown if any error occur while loading the metadata information.
      */
-    public static CustomSamlClient fromMetadata(
-        String relyingPartyIdentifier, Reader metadata, int responseSkew)
-        throws SAMLException {
-        return fromMetadata(
-            relyingPartyIdentifier, metadata, CustomSamlClient.SamlIdpBinding.POST, responseSkew);
+    public static SAMLCustomClient fromMetadata(final String relyingPartyIdentifier, final Reader metadata,
+                                                final int responseSkew) throws SAMLException {
+        return fromMetadata(relyingPartyIdentifier, metadata,
+                SAMLCustomClient.SamlIdpBinding.POST, responseSkew);
     }
 
     /**
@@ -231,26 +218,23 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
      * @param relyingPartyIdentifier      the identifier for the relying party.
      * @param metadata                    the XML metadata obtained from the identity provider.
      * @param samlBinding                 the HTTP method to use for binding to the IdP.
-     * @return The created {@link CustomSamlClient}.
+     * @return The created {@link SAMLCustomClient}.
      * @throws SamlException thrown if any error occur while loading the metadata information.
      */
-    public static CustomSamlClient fromMetadata(
-        String relyingPartyIdentifier,
-        Reader metadata,
-        CustomSamlClient.SamlIdpBinding samlBinding, int responseSkew)
-        throws SAMLException {
+    public static SAMLCustomClient fromMetadata(String relyingPartyIdentifier, final Reader metadata,
+                                                final SAMLCustomClient.SamlIdpBinding samlBinding,
+                                                final int responseSkew) throws SAMLException {
+        final MetadataProvider metadataProvider = createMetadataProvider(metadata);
+        final EntityDescriptor entityDescriptor = getEntityDescriptor(metadataProvider);
 
-        MetadataProvider metadataProvider = createMetadataProvider(metadata);
-        EntityDescriptor entityDescriptor = getEntityDescriptor(metadataProvider);
-
-        IDPSSODescriptor idpSsoDescriptor = getIDPSSODescriptor(entityDescriptor);
-        SingleSignOnService idpBinding = getIdpBinding(idpSsoDescriptor, samlBinding);
-        List<X509Certificate> x509Certificates = getCertificates(idpSsoDescriptor);
-        boolean isOkta = entityDescriptor.getEntityID().contains(".okta.com");
+        final IDPSSODescriptor idpSsoDescriptor = getIDPSSODescriptor(entityDescriptor);
+        final SingleSignOnService idpBinding = getIdpBinding(idpSsoDescriptor, samlBinding);
+        final List<X509Certificate> x509Certificates = getCertificates(idpSsoDescriptor);
 
         if (relyingPartyIdentifier == null) {
-            // Okta's own toolkit uses the entity ID as a relying party identifier, so if we
+            // Okta's own toolkit uses the entity ID as a relying on party identifier, so if we
             // detect that the IDP is Okta let's tolerate a null value for this parameter.
+            final boolean isOkta = entityDescriptor.getEntityID().contains(".okta.com");
             if (isOkta) {
                 relyingPartyIdentifier = entityDescriptor.getEntityID();
             } else {
@@ -258,18 +242,14 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
             }
         }
 
-        String identityProviderUrl = idpBinding.getLocation();
-        String responseIssuer = entityDescriptor.getEntityID();
+        final String identityProviderUrl = idpBinding.getLocation();
+        final String responseIssuer = entityDescriptor.getEntityID();
 
-        return new CustomSamlClient(
-            relyingPartyIdentifier,
-            identityProviderUrl,
-            responseIssuer,
-            x509Certificates,
-            responseSkew);
+        return new SAMLCustomClient(relyingPartyIdentifier, identityProviderUrl,
+                responseIssuer, x509Certificates, responseSkew);
     }
 
-    private void validateResponse(Response response) throws SAMLException {
+    private void validateResponse(final Response response) throws SAMLException {
         try {
             new ResponseSchemaValidator().validate(response);
         } catch (ValidationException ex) {
@@ -280,14 +260,14 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
             throw new SAMLException("The response issuer didn't match the expected value");
         }
 
-        String statusCode = response.getStatus().getStatusCode().getValue();
+        final String statusCode = response.getStatus().getStatusCode().getValue();
 
         if (!statusCode.equals("urn:oasis:names:tc:SAML:2.0:status:Success")) {
             throw new SAMLException("Invalid status code: " + statusCode);
         }
     }
 
-    private void validateAssertion(Response response) throws SAMLException {
+    private void validateAssertion(final Response response) throws SAMLException {
         if (response.getAssertions().size() != 1) {
             throw new SAMLException("The response doesn't contain exactly 1 assertion");
         }
@@ -310,12 +290,12 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
                 "The NameID value is missing from the SAML response; this is likely an IDP configuration issue");
         }
 
-        SAMLMessageContext context = new SAMLMessageContext();
+        final SAMLMessageContext context = new SAMLMessageContext();
         context.setLocalEntityId(relyingPartyIdentifier);
         context.setLocalEntityEndpoint(new EndpointImpl(null, "", "") {
             @Override
             public String getLocation() {
-                return URLUtils.getUrlWithoutTrailingSlash(relyingPartyIdentifier) + SSO_ENDPOINT;
+                return ConfigUtils.getUrlWithoutTrailingSlash(relyingPartyIdentifier) + SSO_ENDPOINT;
             }
         });
 
@@ -335,9 +315,9 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         }
     }
 
-    private void validateSignature(Response response) throws SAMLException {
-        Signature responseSignature = response.getSignature();
-        Signature assertionSignature = response.getAssertions().get(0).getSignature();
+    private void validateSignature(final Response response) throws SAMLException {
+        final Signature responseSignature = response.getSignature();
+        final Signature assertionSignature = response.getAssertions().get(0).getSignature();
 
         if (responseSignature == null && assertionSignature == null) {
             throw new SAMLException("No signature is present in either response or assertion");
@@ -352,7 +332,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         }
     }
 
-    private boolean validate(Signature signature) {
+    private boolean validate(final Signature signature) {
         if (signature == null) {
             return false;
         }
@@ -363,7 +343,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
             .anyMatch(
                 c -> {
                     try {
-                        SignatureValidator signatureValidator = new SignatureValidator(c);
+                        final SignatureValidator signatureValidator = new SignatureValidator(c);
                         signatureValidator.validate(signature);
                         return true;
                     } catch (ValidationException ex) {
@@ -373,15 +353,14 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
     }
 
     private static DOMParser createDOMParser() throws SAMLException {
-        DOMParser parser =
+        final DOMParser parser =
             new DOMParser() {
                 {
                     try {
                         setFeature(INCLUDE_COMMENTS_FEATURE, false);
                     } catch (Exception ex) {
                         throw new SAMLException(
-                            "Cannot disable comments parsing to mitigate https://www.kb.cert.org/vuls/id/475445",
-                            ex);
+                            "Cannot disable comments parsing to mitigate https://www.kb.cert.org/vuls/id/475445", ex);
                     }
                 }
             };
@@ -389,12 +368,11 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         return parser;
     }
 
-    private static MetadataProvider createMetadataProvider(Reader metadata) throws SAMLException {
+    private static MetadataProvider createMetadataProvider(final Reader metadata) throws SAMLException {
         try {
-            DOMParser parser = createDOMParser();
+            final DOMParser parser = createDOMParser();
             parser.parse(new InputSource(metadata));
-            DOMMetadataProvider provider =
-                new DOMMetadataProvider(parser.getDocument().getDocumentElement());
+            final DOMMetadataProvider provider = new DOMMetadataProvider(parser.getDocument().getDocumentElement());
             provider.initialize();
             return provider;
         } catch (IOException | SAXException | MetadataProviderException ex) {
@@ -402,9 +380,8 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         }
     }
 
-    private static EntityDescriptor getEntityDescriptor(MetadataProvider metadataProvider)
-        throws SAMLException {
-        EntityDescriptor descriptor;
+    private static EntityDescriptor getEntityDescriptor(final MetadataProvider metadataProvider) throws SAMLException {
+        final EntityDescriptor descriptor;
 
         try {
             descriptor = (EntityDescriptor) metadataProvider.getMetadata();
@@ -419,10 +396,9 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         return descriptor;
     }
 
-    private static IDPSSODescriptor getIDPSSODescriptor(EntityDescriptor entityDescriptor)
-        throws SAMLException {
+    private static IDPSSODescriptor getIDPSSODescriptor(final EntityDescriptor entityDescriptor) throws SAMLException {
         IDPSSODescriptor idpssoDescriptor =
-            entityDescriptor.getIDPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
+                entityDescriptor.getIDPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
         if (idpssoDescriptor == null) {
             throw new SAMLException("Cannot retrieve IDP SSO descriptor");
         }
@@ -430,15 +406,12 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         return idpssoDescriptor;
     }
 
-    private static SingleSignOnService getIdpBinding(
-        IDPSSODescriptor idpSsoDescriptor, CustomSamlClient.SamlIdpBinding samlBinding) throws SAMLException {
+    private static SingleSignOnService getIdpBinding(final IDPSSODescriptor idpSsoDescriptor,
+                                             final SAMLCustomClient.SamlIdpBinding samlBinding) throws SAMLException {
         return idpSsoDescriptor
             .getSingleSignOnServices()
             .stream()
-            .filter(
-                x
-                    -> x.getBinding()
-                    .equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-" + samlBinding.toString()))
+            .filter(x -> x.getBinding().equals("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-" + samlBinding.toString()))
             .findAny()
             .orElseThrow(() -> new SAMLException("Cannot find HTTP-POST SSO binding in metadata"));
     }
@@ -454,8 +427,8 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
                     .getKeyDescriptors()
                     .stream()
                     .filter(x -> x.getUse() == UsageType.SIGNING)
-                    .flatMap(CustomSamlClient::getDatasWithCertificates)
-                    .map(CustomSamlClient::getFirstCertificate)
+                    .flatMap(SAMLCustomClient::getDatasWithCertificates)
+                    .map(SAMLCustomClient::getFirstCertificate)
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
@@ -465,7 +438,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
         return certificates;
     }
 
-    private static Stream<X509Data> getDatasWithCertificates(KeyDescriptor descriptor) {
+    private static Stream<X509Data> getDatasWithCertificates(final KeyDescriptor descriptor) {
         return descriptor
             .getKeyInfo()
             .getX509Datas()
@@ -473,7 +446,7 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
             .filter(d -> d.getX509Certificates().size() > 0);
     }
 
-    private static X509Certificate getFirstCertificate(X509Data data) {
+    private static X509Certificate getFirstCertificate(final X509Data data) {
         try {
             org.opensaml.xml.signature.X509Certificate cert =
                 data.getX509Certificates().stream().findFirst().orElse(null);
@@ -481,14 +454,14 @@ public class CustomSamlClient extends WebSSOProfileConsumerImpl {
                 return KeyInfoHelper.getCertificate(cert);
             }
         } catch (CertificateException e) {
-            logger.error("Exception in getFirstCertificate", e);
+            log.error("Exception in getFirstCertificate", e);
         }
 
         return null;
     }
 
-    private static Credential getCredential(X509Certificate certificate) {
-        BasicX509Credential credential = new BasicX509Credential();
+    private static Credential getCredential(final X509Certificate certificate) {
+        final BasicX509Credential credential = new BasicX509Credential();
         credential.setEntityCertificate(certificate);
         credential.setPublicKey(certificate.getPublicKey());
         credential.setCRLs(Collections.emptyList());

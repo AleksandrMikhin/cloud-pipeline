@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.test.aspect;
 
+import com.epam.lifescience.security.jwt.JWTTokenGenerator;
+import com.epam.lifescience.security.jwt.JWTTokenVerifier;
 import com.epam.pipeline.acl.datastorage.DataStorageApiService;
 import com.epam.pipeline.acl.docker.ToolApiService;
 import com.epam.pipeline.acl.folder.FolderApiService;
@@ -109,9 +111,9 @@ import com.epam.pipeline.repository.run.PipelineRunServiceUrlRepository;
 import com.epam.pipeline.repository.user.OnlineUsersRepository;
 import com.epam.pipeline.repository.user.PipelineUserRepository;
 import com.epam.pipeline.security.acl.JdbcMutableAclServiceImpl;
-import com.epam.pipeline.security.jwt.JwtTokenGenerator;
-import com.epam.pipeline.security.jwt.JwtTokenVerifier;
 import java.util.concurrent.Executor;
+
+import com.epam.pipeline.security.jwt.JWTTokenDockerGenerator;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -136,7 +138,10 @@ public class AspectTestBeans {
     protected ImpersonationManager impersonationManager;
 
     @MockBean
-    protected JwtTokenGenerator mockJwtTokenGenerator;
+    protected JWTTokenGenerator mockJwtTokenGenerator;
+
+    @MockBean
+    protected JWTTokenDockerGenerator mockJwtTokenDockerGenerator;
 
     @MockBean
     protected MetadataDao mockMetadataDao;
@@ -196,7 +201,7 @@ public class AspectTestBeans {
     protected ToolGroupWithIssuesMapper mockToolGroupWithIssuesMapper;
 
     @MockBean
-    protected JwtTokenVerifier mockTwtTokenVerifier;
+    protected JWTTokenVerifier mockJwtTokenVerifier;
 
     @MockBean
     protected ToolVersionDao mockToolVersionDao;

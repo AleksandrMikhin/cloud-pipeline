@@ -16,6 +16,8 @@
 
 package com.epam.pipeline.app;
 
+import com.epam.lifescience.security.jwt.JWTTokenGenerator;
+import com.epam.lifescience.security.jwt.JWTTokenVerifier;
 import com.epam.pipeline.common.MessageHelper;
 import com.epam.pipeline.dao.monitoring.MonitoringESDao;
 import com.epam.pipeline.manager.billing.BillingManager;
@@ -36,8 +38,6 @@ import com.epam.pipeline.manager.user.OnlineUsersService;
 import com.epam.pipeline.manager.user.UserRunnersManager;
 import com.epam.pipeline.repository.run.PipelineRunServiceUrlRepository;
 import com.epam.pipeline.repository.user.PipelineUserRepository;
-import com.epam.pipeline.security.jwt.JwtTokenGenerator;
-import com.epam.pipeline.security.jwt.JwtTokenVerifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.actuate.autoconfigure.ManagementWebSecurityAutoConfiguration;
@@ -106,10 +106,10 @@ public class TestApplication {
     public KeyManager keyManager;
 
     @MockBean
-    public JwtTokenGenerator jwtTokenGenerator;
+    public JWTTokenGenerator jwtTokenGenerator;
 
     @MockBean
-    public JwtTokenVerifier jwtTokenVerifier;
+    public JWTTokenVerifier jwtTokenVerifier;
 
     @MockBean
     public Executor dataStoragePathExecutor;

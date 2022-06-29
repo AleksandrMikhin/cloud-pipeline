@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package com.epam.pipeline.utils;
+package com.epam.pipeline.security.saml;
 
-public final class URLUtils {
-
-    private static final String SLASH = "/";
-
-    private URLUtils() {
-        //no op
-    }
-
-    public static String getUrlWithoutTrailingSlash(String url) {
-        return url.endsWith(SLASH) ?
-                url.substring(0, url.length() - 1) : url;
-    }
-
-    public static String getUrlWithTrailingSlash(String url) {
-        return url.endsWith(SLASH) ? url : url + SLASH;
-    }
+/**
+ * Represents the SAML user registration strategies set into saml.user.auto.create property.
+ * AUTO - creates a new user if not exists
+ * EXPLICIT - requires users pre-registration id database (performs by admin)
+ * EXPLICIT_GROUP - requires specific groups pre-registration. If users SAML groups have no intersections with
+ * registered security groups the authentication will be failed.
+ */
+public enum SAMLUserRegisterStrategy {
+    AUTO, EXPLICIT, EXPLICIT_GROUP
 }

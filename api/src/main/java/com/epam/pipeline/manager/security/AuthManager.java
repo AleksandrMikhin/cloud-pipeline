@@ -16,15 +16,15 @@
 
 package com.epam.pipeline.manager.security;
 
-
-import com.epam.pipeline.entity.security.JwtRawToken;
+import com.epam.lifescience.security.entity.UserContext;
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
+import com.epam.lifescience.security.jwt.JWTAuthenticationToken;
+import com.epam.lifescience.security.jwt.JWTTokenGenerator;
 import com.epam.pipeline.entity.user.DefaultRoles;
 import com.epam.pipeline.entity.user.ImpersonationStatus;
 import com.epam.pipeline.entity.user.PipelineUser;
 import com.epam.pipeline.entity.user.Role;
-import com.epam.pipeline.security.UserContext;
-import com.epam.pipeline.security.jwt.JwtAuthenticationToken;
-import com.epam.pipeline.security.jwt.JwtTokenGenerator;
+import com.epam.pipeline.utils.PipelineUserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -43,11 +43,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class AuthManager {
-
     public static final String UNAUTHORIZED_USER = "Unauthorized";
 
     @Autowired
-    private JwtTokenGenerator jwtTokenGenerator;
+    private JWTTokenGenerator jwtTokenGenerator;
 
     @Value("${flyway.placeholders.default.admin}")
     private String defaultAdmin;
@@ -94,7 +93,7 @@ public class AuthManager {
         if (principal instanceof UserContext) {
             UserContext user = (UserContext)principal;
             return user.getRoles().stream()
-                    .anyMatch(role -> role.getName().equals(DefaultRoles.ROLE_ADMIN.getName()));
+                    .anyMatch(role -> role.equals(DefaultRoles.ROLE_ADMIN.getName()));
         } else if (principal instanceof User) {
             return ((User) principal).getAuthorities().stream()
                 .anyMatch(role -> role.getAuthority().equals(DefaultRoles.ROLE_ADMIN.getName()));
@@ -103,11 +102,11 @@ public class AuthManager {
         }
     }
 
-    public JwtRawToken issueTokenForCurrentUser() {
+    public JWTRawToken issueTokenForCurrentUser() {
         return issueTokenForCurrentUser(null);
     }
 
-    public JwtRawToken issueTokenForCurrentUser(Long expiration) {
+    public JWTRawToken issueTokenForCurrentUser(Long expiration) {
         Object principal = getPrincipal();
         if (principal instanceof UserContext) {
             return issueToken((UserContext) principal, expiration);
@@ -126,7 +125,7 @@ public class AuthManager {
 
     private PipelineUser mapToPipelineUser(final Object principal) {
         if (principal instanceof UserContext) {
-            return ((UserContext)principal).toPipelineUser();
+            return PipelineUserUtils.toPipelineUser(((UserContext)principal));
         } else if (principal instanceof User) {
             User user = (User) principal;
             return PipelineUser.builder()
@@ -141,9 +140,9 @@ public class AuthManager {
     }
 
     public void setCurrentUser(final PipelineUser pipelineUser) {
-        final UserContext user = new UserContext(pipelineUser);
+        final UserContext user = PipelineUserUtils.toUserContext(pipelineUser);
         SecurityContextHolder.getContext()
-                .setAuthentication(new JwtAuthenticationToken(user, user.getAuthorities()));
+                .setAuthentication(new JWTAuthenticationToken(user));
     }
 
     public ImpersonationStatus getImpersonationStatus() {
@@ -174,12 +173,12 @@ public class AuthManager {
      * @param expiration token expiration time
      * @return a JwtRawToken, that contains a string representation of JWT token
      */
-    public JwtRawToken issueToken(UserContext user, @Nullable Long expiration) {
-        return new JwtRawToken(jwtTokenGenerator.encodeToken(user.toClaims(), expiration));
+    public JWTRawToken issueToken(UserContext user, @Nullable Long expiration) {
+        return new JWTRawToken(jwtTokenGenerator.encodeToken(user.toClaims(), expiration));
     }
 
-    public JwtRawToken issueAdminToken(@Nullable Long expiration) {
-        return new JwtRawToken(jwtTokenGenerator.encodeToken(getAdminContext().toClaims(), expiration));
+    public JWTRawToken issueAdminToken(@Nullable Long expiration) {
+        return new JWTRawToken(jwtTokenGenerator.encodeToken(getAdminContext().toClaims(), expiration));
     }
 
     /**
@@ -190,14 +189,14 @@ public class AuthManager {
 
         UserContext userContext = getAdminContext();
         Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_ADMIN");
-        context.setAuthentication(new JwtAuthenticationToken(userContext, authorities));
+        context.setAuthentication(new JWTAuthenticationToken(userContext, authorities));
 
         return context;
     }
 
     private UserContext getAdminContext() {
         UserContext userContext = new UserContext(defaultAdminId, defaultAdmin);
-        userContext.setRoles(Collections.singletonList(DefaultRoles.ROLE_ADMIN.getRole()));
+        userContext.setRoles(Collections.singletonList(DefaultRoles.ROLE_ADMIN.getName()));
         return userContext;
     }
 

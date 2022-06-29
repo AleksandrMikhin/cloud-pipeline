@@ -16,11 +16,11 @@
 
 package com.epam.pipeline.acl.user;
 
+import com.epam.lifescience.security.entity.jwt.JWTRawToken;
 import com.epam.pipeline.controller.vo.PipelineUserExportVO;
 import com.epam.pipeline.controller.vo.PipelineUserVO;
 import com.epam.pipeline.dto.user.OnlineUsers;
 import com.epam.pipeline.entity.info.UserInfo;
-import com.epam.pipeline.entity.security.JwtRawToken;
 import com.epam.pipeline.entity.user.CustomControl;
 import com.epam.pipeline.entity.user.GroupStatus;
 import com.epam.pipeline.entity.user.ImpersonationStatus;
@@ -214,7 +214,7 @@ public class UserApiService {
      * @return generated token
      */
     @PreAuthorize(ADMIN_ONLY)
-    public JwtRawToken issueToken(final String userName, final Long expiration) {
+    public JWTRawToken issueToken(final String userName, final Long expiration) {
         return userManager.issueToken(userName, expiration);
     }
 
